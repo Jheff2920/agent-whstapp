@@ -62,12 +62,17 @@ El agente **solo afirma lo que esté en estos archivos**; no inventa productos, 
 | Archivo | Contenido | Estado |
 |---|---|---|
 | `catalog.json` | 82 productos del **Catálogo Red Soluciones 2026** (16 categorías): marca, modelo, características, precio en soles, garantía y página del PDF | ✅ cargado |
-| `empresa.md` | Qué ofrece, garantía, ubicación y contacto (tomados del catálogo); horario, pagos/envíos/IGV, tono de marca y preguntas frecuentes | ⏳ partes `TODO` |
-| `resenas.md` | Reseñas reales de clientes (se citan textualmente) | ⏳ `TODO` |
+| `sedes.yml` | Las dos sedes (Cyberplaza y San Isidro): dirección y horario por día, hora de Lima | ✅ cargado |
+| `empresa.md` | Qué ofrece, precios con IGV, garantía y devoluciones, contacto | ⏳ faltan formas de pago, envíos/ventas online y comprobantes (`TODO`) |
+| `resenas.md` | Reseñas reales de clientes, citadas textualmente | opcional: **no existe**; sin él el agente no menciona opiniones de clientes |
 
 Se recargan solos al editarlos. Las secciones con `TODO` no se muestran al modelo: se reemplazan por un aviso para que
 derive a una persona en lugar de inventar. Con `NODE_ENV=production` el servicio **se niega a arrancar** mientras
-quede algún `TODO`. Los tests usan datos ficticios en `tests/fixtures/`.
+quede algún `TODO` en un archivo obligatorio. Los tests usan datos ficticios en `tests/fixtures/`.
+
+El prompt incluye además el **estado de las sedes ahora** (abierta/cerrada y cuándo abre), calculado con la hora de Lima
+en código y no por el modelo. El tono (cercano y profesional, de "tú", sin emojis) está en las reglas de `src/agent/prompt.ts`.
+Por ahora el agente **no agenda citas**: da dirección y horario de la sede y deriva a una persona si el cliente quiere reservar.
 
 El catálogo completo no cabe en el prompt, así que el modelo recibe un **índice** (modelo, marca y precio, ≈2 000 tokens
 en total) y consulta las especificaciones con la herramienta `search_catalog` (por modelo o palabras clave).

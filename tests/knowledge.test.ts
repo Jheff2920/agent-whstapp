@@ -10,9 +10,20 @@ const REAL_KNOWLEDGE = new URL("../knowledge", import.meta.url).pathname;
 describe("conocimiento", () => {
   it("el conocimiento real tiene pendientes lo que aún no se entregó (nada inventado)", () => {
     const k = loadKnowledge(REAL_KNOWLEDGE);
-    expect(k.pending.sort()).toEqual(["empresa.md", "resenas.md"]);
+    // las reseñas son opcionales y no bloquean; lo que falta es pagos, envíos y comprobantes en empresa.md
+    expect(k.pending).toEqual(["empresa.md"]);
+    expect(k.resenas).toBe("");
+    expect(k.sedes?.sedes).toHaveLength(2);
     expect(() => assertKnowledgeReady(k, "production")).toThrow("Falta completar");
     expect(() => assertKnowledgeReady(k, "development")).not.toThrow();
+  });
+  it("resenas.md solo cuenta si tiene contenido real (un TODO se ignora)", () => {
+    const dir = fs.mkdtempSync(path.join(os.tmpdir(), "kn-"));
+    fs.writeFileSync(path.join(dir, "resenas.md"), "TODO: pegar reseñas");
+    expect(loadKnowledge(dir).resenas).toBe("");
+    fs.writeFileSync(path.join(dir, "resenas.md"), '"Excelente atención" — Cliente');
+    expect(loadKnowledge(dir).resenas).toContain("Excelente");
+    expect(loadKnowledge(dir).pending).not.toContain("resenas.md");
   });
   it("los fixtures cargan completos", () => {
     const k = loadKnowledge(FIXTURE_KNOWLEDGE);

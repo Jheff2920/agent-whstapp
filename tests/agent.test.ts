@@ -128,6 +128,7 @@ describe("prompt", () => {
     });
     expect(stable).toContain("Aún no hay información cargada");
     expect(stable).toContain("Vacío: no menciones productos");
+    expect(stable).toContain("Sin información de sedes");
   });
 });
 
@@ -147,6 +148,28 @@ describe("prompt con el conocimiento real", () => {
     expect(stable).toContain("(+51) 960 944 717");
     // el catálogo completo (especificaciones) no se inyecta: se consulta con search_catalog
     expect(stable).not.toContain("Vida útil del cabezal");
+  });
+
+  it("incluye sedes, horarios, IGV y devoluciones entregados; sin reseñas el agente no las menciona", () => {
+    const stable = build();
+    expect(stable).toContain("Av. Canaval y Moreyra 345 - San Isidro, piso 7");
+    expect(stable).toContain("lunes a viernes 09:00-18:00; sábado 09:00-13:00; domingo cerrado");
+    expect(stable).toContain("Todos los precios incluyen IGV");
+    expect(stable).toContain("No hay devolución por mal uso");
+    expect(stable).not.toContain("# RESEÑAS DE CLIENTES");
+    expect(stable).toContain("tutea al cliente y no uses emojis");
+    expect(stable).toContain("no puedes agendar citas");
+  });
+
+  it("el estado de las sedes (calculado) va en la parte volátil con la hora de Lima", () => {
+    const ctx = setup([say("x")], { KNOWLEDGE_DIR: real });
+    const customer = ctx.repo.upsertCustomer("51900");
+    const { volatile, stable } = buildSystem(ctx.knowledge.get(), {
+      customer, facts: [], mode: "bot", now: new Date("2026-10-03T19:00:00Z"), timezone: "America/Lima",
+    });
+    expect(volatile).toContain("- Cyberplaza: abierta ahora (cierra a las 19:00)");
+    expect(volatile).toContain("- San Isidro: cerrada ahora; abre el lunes a las 09:00");
+    expect(stable).not.toContain("abierta ahora"); // lo que cambia con la hora no rompe el caché del prompt estable
   });
 
   it("las secciones pendientes (TODO) se reemplazan por un aviso para derivar, sin exponer la marca TODO", () => {

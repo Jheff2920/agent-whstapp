@@ -1,17 +1,20 @@
 import fs from "node:fs";
 import path from "node:path";
+import { parseSedes, type Sedes } from "./sedes.js";
 
 export type CatalogItem = Record<string, unknown>;
 
 export interface Knowledge {
   empresa: string;
   catalog: CatalogItem[];
+  /** Opcional: si no hay reseñas reales, queda vacío y el agente no menciona opiniones. */
   resenas: string;
-  /** Archivos que faltan, están vacíos o aún contienen marcas TODO. */
+  sedes?: Sedes;
+  /** Archivos obligatorios que faltan, están vacíos o aún contienen marcas TODO. */
   pending: string[];
 }
 
-const FILES = ["empresa.md", "catalog.json", "resenas.md"] as const;
+const FILES = ["empresa.md", "catalog.json", "resenas.md", "sedes.yml"] as const;
 
 export function loadKnowledge(dir: string): Knowledge {
   const pending: string[] = [];
@@ -37,11 +40,15 @@ export function loadKnowledge(dir: string): Knowledge {
     }
   }
 
+  const rawSedes = read("sedes.yml").trim();
+  const sedes = rawSedes ? parseSedes(rawSedes) : undefined;
+
   if (!empresa || /\bTODO\b/.test(empresa)) pending.push("empresa.md");
   if (catalog.length === 0 || /\bTODO\b/.test(rawCatalog)) pending.push("catalog.json");
-  if (!resenas || /\bTODO\b/.test(resenas)) pending.push("resenas.md");
+  if (!sedes) pending.push("sedes.yml");
 
-  return { empresa, catalog, resenas, pending };
+  // resenas.md es opcional: solo cuenta si tiene contenido real (sin marcas TODO).
+  return { empresa, catalog, resenas: /\bTODO\b/.test(resenas) ? "" : resenas, sedes, pending };
 }
 
 /** Recarga automáticamente cuando cambia algún archivo (sin reiniciar el servicio). */

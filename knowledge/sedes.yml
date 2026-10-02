@@ -1,0 +1,31 @@
+# Sedes de Red Soluciones: dirección y horario de atención. Horas en formato 24 h (HH:MM-HH:MM).
+# Un día sin ventanas ([]) significa cerrado; se pueden poner varias ventanas, p. ej. ["09:00-13:00", "15:00-19:00"].
+# Datos entregados por el equipo de Red Soluciones; la dirección de Cyberplaza figura en el catálogo 2026.
+zona_horaria: America/Lima
+
+sedes:
+  - id: cyberplaza
+    nombre: Cyberplaza
+    direccion: "Cyberplaza – Av. Garcilazo de la Vega 1348. Stand SSA-153 / Módulo K-1041-B / Stand 2A-130"
+    horario:
+      lunes: ["10:00-19:00"]
+      martes: ["10:00-19:00"]
+      miercoles: ["10:00-19:00"]
+      jueves: ["10:00-19:00"]
+      viernes: ["10:00-19:00"]
+      sabado: ["10:00-19:00"]
+      domingo: []
+
+  - id: san-isidro
+    nombre: San Isidro
+    direccion: "Av. Canaval y Moreyra 345 - San Isidro, piso 7"
+    horario:
+      lunes: ["09:00-18:00"]
+      martes: ["09:00-18:00"]
+      miercoles: ["09:00-18:00"]
+      jueves: ["09:00-18:00"]
+      viernes: ["09:00-18:00"]
+      sabado: ["09:00-13:00"]
+      domingo: []
+
+# Pendiente para la Fase 3 (citas): duración de cada cita, cuántas a la vez, anticipación mínima y feriados.

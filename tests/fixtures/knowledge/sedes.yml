@@ -1,0 +1,8 @@
+# Datos ficticios, solo para tests
+zona_horaria: America/Lima
+sedes:
+  - id: prueba
+    nombre: Sede de Prueba
+    direccion: "Calle Ficticia 123"
+    horario:
+      lunes: ["09:00-18:00"]
