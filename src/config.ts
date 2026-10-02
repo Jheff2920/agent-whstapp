@@ -1,0 +1,96 @@
+import { z } from "zod";
+
+const bool = z
+  .enum(["true", "false", "1", "0", ""])
+  .transform((v) => (v === "" ? undefined : v === "true" || v === "1"));
+
+const schema = z.object({
+  PORT: z.coerce.number().int().default(3000),
+  NODE_ENV: z.string().default("development"),
+  TIMEZONE: z.string().default("America/Lima"),
+  DB_PATH: z.string().default("./data/agent.db"),
+  KNOWLEDGE_DIR: z.string().default("./knowledge"),
+
+  LLM_PROVIDER: z.enum(["ollama", "anthropic"]).default("ollama"),
+  LLM_MODEL: z.string().optional(),
+  LEARNING_PROVIDER: z.enum(["ollama", "anthropic", ""]).optional(),
+
+  OLLAMA_URL: z.string().default("http://127.0.0.1:11434"),
+  OLLAMA_THINK: bool.optional(),
+  OLLAMA_TIMEOUT_MS: z.coerce.number().int().default(180_000),
+
+  ANTHROPIC_API_KEY: z.string().optional(),
+  ANTHROPIC_EFFORT: z.enum(["low", "medium", "high"]).default("medium"),
+  ANTHROPIC_FALLBACKS: bool.optional(),
+
+  INTERNAL_TOKEN: z.string().default(""),
+  WA_APP_SECRET: z.string().default(""),
+  N8N_SEND_URL: z.string().default(""),
+
+  HISTORY_LIMIT: z.coerce.number().int().positive().default(20),
+  MAX_TOOL_ITERATIONS: z.coerce.number().int().positive().default(6),
+  DEBOUNCE_MS: z.coerce.number().int().nonnegative().default(1500),
+});
+
+export type Config = {
+  port: number;
+  nodeEnv: string;
+  timezone: string;
+  dbPath: string;
+  knowledgeDir: string;
+  llmProvider: "ollama" | "anthropic";
+  llmModel?: string;
+  learningProvider: "ollama" | "anthropic";
+  ollamaUrl: string;
+  ollamaThink?: boolean;
+  ollamaTimeoutMs: number;
+  anthropicApiKey?: string;
+  anthropicEffort: "low" | "medium" | "high";
+  anthropicFallbacks: boolean;
+  internalToken: string;
+  waAppSecret: string;
+  n8nSendUrl: string;
+  historyLimit: number;
+  maxToolIterations: number;
+  debounceMs: number;
+};
+
+export const DEFAULT_MODELS = {
+  ollama: "qwen2.5:7b-instruct",
+  anthropic: "claude-opus-5-5",
+} as const;
+
+export function loadConfig(env: NodeJS.ProcessEnv = process.env): Config {
+  const e = schema.parse(env);
+  const cfg: Config = {
+    port: e.PORT,
+    nodeEnv: e.NODE_ENV,
+    timezone: e.TIMEZONE,
+    dbPath: e.DB_PATH,
+    knowledgeDir: e.KNOWLEDGE_DIR,
+    llmProvider: e.LLM_PROVIDER,
+    llmModel: e.LLM_MODEL || undefined,
+    learningProvider: e.LEARNING_PROVIDER || e.LLM_PROVIDER,
+    ollamaUrl: e.OLLAMA_URL,
+    ollamaThink: e.OLLAMA_THINK,
+    ollamaTimeoutMs: e.OLLAMA_TIMEOUT_MS,
+    anthropicApiKey: e.ANTHROPIC_API_KEY || undefined,
+    anthropicEffort: e.ANTHROPIC_EFFORT,
+    anthropicFallbacks: e.ANTHROPIC_FALLBACKS ?? true,
+    internalToken: e.INTERNAL_TOKEN,
+    waAppSecret: e.WA_APP_SECRET,
+    n8nSendUrl: e.N8N_SEND_URL,
+    historyLimit: e.HISTORY_LIMIT,
+    maxToolIterations: e.MAX_TOOL_ITERATIONS,
+    debounceMs: e.DEBOUNCE_MS,
+  };
+  if (cfg.nodeEnv === "production") {
+    if (!cfg.internalToken || cfg.internalToken === "cambia-esto") {
+      throw new Error("INTERNAL_TOKEN debe definirse en producción");
+    }
+    if (!cfg.waAppSecret) {
+      throw new Error("WA_APP_SECRET debe definirse en producción (valida la firma de Meta)");
+    }
+  }
+  return cfg;
+}

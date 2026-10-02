@@ -1,0 +1,4 @@
+[
+  { "id": "A", "nombre": "Producto de prueba A", "descripcion": "Producto ficticio para tests", "precio": "S/ 100" },
+  { "id": "B", "nombre": "Servicio de prueba B", "descripcion": "Servicio ficticio de instalación", "precio": "S/ 250" }
+]
