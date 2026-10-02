@@ -8,12 +8,19 @@ import { FIXTURE_KNOWLEDGE } from "./helpers.js";
 const REAL_KNOWLEDGE = new URL("../knowledge", import.meta.url).pathname;
 
 describe("conocimiento", () => {
-  it("el conocimiento real tiene pendientes lo que aún no se entregó (nada inventado)", () => {
+  it("el conocimiento real está completo (las reseñas son opcionales y no existen)", () => {
     const k = loadKnowledge(REAL_KNOWLEDGE);
-    // las reseñas son opcionales y no bloquean; lo que falta es pagos, envíos y comprobantes en empresa.md
-    expect(k.pending).toEqual(["empresa.md"]);
+    expect(k.pending).toEqual([]);
     expect(k.resenas).toBe("");
     expect(k.sedes?.sedes).toHaveLength(2);
+    expect(() => assertKnowledgeReady(k, "production")).not.toThrow();
+  });
+  it("un conocimiento con TODO o sin sedes bloquea el arranque en producción pero no en desarrollo", () => {
+    const dir = fs.mkdtempSync(path.join(os.tmpdir(), "kn-"));
+    fs.writeFileSync(path.join(dir, "empresa.md"), "# X\n\n## Pagos\nTODO\n");
+    fs.writeFileSync(path.join(dir, "catalog.json"), '[{"id":"a"}]');
+    const k = loadKnowledge(dir);
+    expect(k.pending.sort()).toEqual(["empresa.md", "sedes.yml"]);
     expect(() => assertKnowledgeReady(k, "production")).toThrow("Falta completar");
     expect(() => assertKnowledgeReady(k, "development")).not.toThrow();
   });

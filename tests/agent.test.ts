@@ -174,9 +174,27 @@ describe("prompt con el conocimiento real", () => {
     expect(stable).not.toContain("abierta ahora"); // lo que cambia con la hora no rompe el caché del prompt estable
   });
 
-  it("las secciones pendientes (TODO) se reemplazan por un aviso para derivar, sin exponer la marca TODO", () => {
+  it("incluye los datos de pago entregados y la instrucción de no verificar pagos", () => {
     const stable = build();
+    expect(stable).toContain("RUC: 20563358549");
+    expect(stable).toContain("200-3002743785");
+    expect(stable).toContain("003-200-003002743785-31");
+    expect(stable).toContain("191-2189537-0-33");
+    expect(stable).toContain("002-191-002189537033-52");
+    expect(stable).toContain("Plin: 922 040 643");
+    expect(stable).toContain("Yape: 949 246 186");
+    expect(stable).toContain("No puedes verificar pagos");
+    expect(stable).not.toMatch(/\bTODO\b/);
+  });
+
+  it("las secciones pendientes (TODO) se reemplazan por un aviso para derivar, sin exponer la marca TODO", () => {
+    const dir = fs.mkdtempSync(path.join(os.tmpdir(), "kn-todo-"));
+    fs.writeFileSync(path.join(dir, "empresa.md"), "# Empresa\n\n## Pagos\nTODO\n\n## Garantía\n1 año\n");
+    const ctx = setup([say("x")], { KNOWLEDGE_DIR: dir });
+    const customer = ctx.repo.upsertCustomer("51900");
+    const { stable } = buildSystem(ctx.knowledge.get(), { customer, facts: [], mode: "bot", now: new Date(), timezone: "America/Lima" });
     expect(stable).toContain("Sin información cargada sobre este tema");
+    expect(stable).toContain("1 año");
     expect(stable).not.toMatch(/\bTODO\b/);
   });
 
