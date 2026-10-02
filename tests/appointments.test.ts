@@ -295,3 +295,40 @@ describe("prompt de citas", () => {
     expect(buildSystem(withHolidays, ctx).stable).toContain("En feriados no se atiende");
   });
 });
+
+describe("conversación completa por WhatsApp (agente real, modelo guionado)", () => {
+  it("consulta horarios, espera el sí del cliente, reserva y responde con los datos exactos", async () => {
+    const { callTool, say, setup: setupAll, metaPayload } = await import("./helpers.js");
+    const { sign } = await import("../src/whatsapp/signature.js");
+    const steps = [
+      callTool("check_availability", { sede: "Cyberplaza", fecha: "2026-10-06" }),
+      say("Mañana en Cyberplaza tengo libre a las 10:00, 11:00 y 12:00. ¿Cuál prefieres?"),
+      callTool("book_appointment", { sede: "Cyberplaza", fecha: "2026-10-06", hora: "11:00", nombre: "Ana Torres", motivo: "ver impresoras", cliente_confirmo: true }),
+      say("Listo, Ana: tu cita #1 es el martes 6 de octubre a las 11:00 en Cyberplaza."),
+    ];
+    const ctx = setupAll(steps, {}, (repo) => new AppointmentService(repo, () => REAL, {}, () => MON_9AM));
+
+    const send = async (id: string, text: string) => {
+      const raw = JSON.stringify(metaPayload(id, "51987654321", text));
+      const res = await ctx.app.inject({ method: "POST", url: "/webhook", payload: raw, headers: { "content-type": "application/json", "x-hub-signature-256": sign(raw, "secreto") } });
+      expect(res.statusCode).toBe(202);
+      await ctx.queue.idle();
+      await ctx.outbox.flush();
+    };
+
+    await send("wamid.1", "hola, quiero ir a la tienda mañana");
+    expect(ctx.sender.sent.at(-1)!.text).toContain("10:00, 11:00 y 12:00");
+    expect(ctx.repo.listAppointments("2026-01-01", "2027-01-01")).toHaveLength(0);
+
+    await send("wamid.2", "sí, a las 11 por favor, soy Ana Torres");
+    const [appt] = ctx.repo.listAppointments("2026-01-01T00:00:00Z", "2027-01-01T00:00:00Z");
+    expect(appt).toMatchObject({ sede: "cyberplaza", starts_at: "2026-10-06T16:00:00.000Z", contact_name: "Ana Torres", status: "confirmada", source: "bot" });
+    expect(ctx.sender.sent.at(-1)!.text).toContain("tu cita #1");
+    expect(ctx.repo.getCustomer(appt!.customer_id)!.stage).toBe("cita_agendada");
+
+    // el prompt de la segunda vuelta ya trae las reglas de citas y la fecha de Lima
+    const sys = ctx.provider.calls[0]!.system;
+    expect(sys.stable).toContain("CITAS EN TIENDA");
+    expect(sys.volatile).toContain("Citas próximas del cliente: ninguna.");
+  });
+});

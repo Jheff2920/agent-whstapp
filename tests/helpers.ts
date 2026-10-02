@@ -1,5 +1,6 @@
 import pino from "pino";
 import { Agent } from "../src/agent/agent.js";
+import type { AppointmentService } from "../src/appointments/service.js";
 import { loadConfig, type Config } from "../src/config.js";
 import { ConversationService } from "../src/conversation.js";
 import { openDb } from "../src/db/db.js";
@@ -70,13 +71,14 @@ export function testConfig(over: Record<string, string> = {}): Config {
   } as NodeJS.ProcessEnv);
 }
 
-export function setup(steps: Step[], over: Record<string, string> = {}) {
+export function setup(steps: Step[], over: Record<string, string> = {}, makeAppointments?: (repo: Repo) => AppointmentService) {
   const cfg = testConfig(over);
   const log = pino({ level: "silent" });
   const repo = new Repo(openDb(":memory:"));
   const provider = new FakeProvider(steps);
   const knowledge = new KnowledgeStore(cfg.knowledgeDir);
-  const agent = new Agent({ provider, repo, knowledge, cfg });
+  const appointments = makeAppointments?.(repo);
+  const agent = new Agent({ provider, repo, knowledge, cfg, appointments });
   const sender = new CaptureSender();
   const outbox = new Outbox(repo, sender, log);
   const queue = new KeyedQueue();
@@ -87,7 +89,7 @@ export function setup(steps: Step[], over: Record<string, string> = {}) {
     repo, agent, outbox, queue, log, debounceMs: 0, bus, alerts, panelUrl: "http://panel.test",
   });
   const app = buildApp({ cfg, repo, conversations, log });
-  return { cfg, log, repo, provider, knowledge, agent, sender, outbox, queue, conversations, app, bus, notifier, alerts };
+  return { cfg, log, repo, provider, knowledge, agent, appointments, sender, outbox, queue, conversations, app, bus, notifier, alerts };
 }
 
 export function metaPayload(id: string, from: string, text: string, name = "Cliente Test") {
