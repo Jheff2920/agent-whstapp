@@ -15,7 +15,7 @@ async function panelSetup(steps = [say("respuesta del bot")]) {
     bus: ctx.bus,
     auth,
     log: ctx.log,
-    info: { provider: "ollama", model: "fake", knowledgePending: () => [] },
+    info: { provider: "ollama", model: "fake", sendConfigured: false, alertChannel: "none" as const, knowledgePending: () => [] },
     webDir: "/ruta/que/no/existe",
   });
   const login = async () => {
@@ -98,7 +98,7 @@ describe("autenticación del panel", () => {
     const panel = await buildPanelApp({
       cfg: ctx.cfg, repo: ctx.repo, outbox: ctx.outbox, bus: ctx.bus, log: ctx.log,
       auth: new Auth({ secret: "", secure: false }),
-      info: { provider: "x", model: "y", knowledgePending: () => [] }, webDir: "/no",
+      info: { provider: "x", model: "y", sendConfigured: false, alertChannel: "none" as const, knowledgePending: () => [] }, webDir: "/no",
     });
     expect((await panel.inject({ method: "POST", url: "/api/auth/login", payload: { password: "x" } })).statusCode).toBe(503);
   });

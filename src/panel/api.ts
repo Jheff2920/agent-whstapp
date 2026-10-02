@@ -14,7 +14,7 @@ export interface PanelDeps {
   bus: EventBus;
   auth: Auth;
   /** Datos informativos para la pantalla de estado. */
-  info: { provider: string; model: string; knowledgePending: () => string[] };
+  info: { provider: string; model: string; sendConfigured: boolean; alertChannel: "telegram" | "n8n" | "none"; knowledgePending: () => string[] };
 }
 
 const DAY_MS = 24 * 60 * 60 * 1000;
@@ -237,8 +237,9 @@ export function registerPanelApi(app: FastifyInstance, d: PanelDeps): void {
   // ---- estado ----
   app.get("/api/status", async () => ({
     llm: { provider: d.info.provider, model: d.info.model },
-    n8nSendConfigured: d.cfg.n8nSendUrl !== "",
-    alertsConfigured: d.cfg.alertUrl !== "",
+    sendConfigured: d.info.sendConfigured,
+    alertsConfigured: d.info.alertChannel !== "none",
+    alertChannel: d.info.alertChannel,
     knowledgePending: d.info.knowledgePending(),
     outbox: repo.outboxCounts(),
     conversations: repo.conversationCounts(),

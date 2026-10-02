@@ -27,6 +27,17 @@ const schema = z.object({
   WA_APP_SECRET: z.string().default(""),
   N8N_SEND_URL: z.string().default(""),
 
+  // Envío y recepción directos con la Cloud API de Meta (sin n8n)
+  WA_ACCESS_TOKEN: z.string().default(""),
+  WA_PHONE_NUMBER_ID: z.string().default(""),
+  WA_VERIFY_TOKEN: z.string().default(""),
+  WA_GRAPH_VERSION: z.string().default("v23.0"),
+  WA_GRAPH_BASE_URL: z.string().default("https://graph.facebook.com"),
+
+  // Alertas a asesores por Telegram
+  TELEGRAM_BOT_TOKEN: z.string().default(""),
+  TELEGRAM_CHAT_ID: z.string().default(""),
+
   ALERT_URL: z.string().default(""),
   PANEL_URL: z.string().default(""),
   PANEL_PORT: z.coerce.number().int().default(3001),
@@ -59,6 +70,13 @@ export type Config = {
   internalToken: string;
   waAppSecret: string;
   n8nSendUrl: string;
+  waAccessToken: string;
+  waPhoneNumberId: string;
+  waVerifyToken: string;
+  waGraphVersion: string;
+  waGraphBaseUrl: string;
+  telegramBotToken: string;
+  telegramChatId: string;
   alertUrl: string;
   panelUrl: string;
   panelPort: number;
@@ -97,6 +115,13 @@ export function loadConfig(env: NodeJS.ProcessEnv = process.env): Config {
     internalToken: e.INTERNAL_TOKEN,
     waAppSecret: e.WA_APP_SECRET,
     n8nSendUrl: e.N8N_SEND_URL,
+    waAccessToken: e.WA_ACCESS_TOKEN,
+    waPhoneNumberId: e.WA_PHONE_NUMBER_ID,
+    waVerifyToken: e.WA_VERIFY_TOKEN,
+    waGraphVersion: e.WA_GRAPH_VERSION,
+    waGraphBaseUrl: e.WA_GRAPH_BASE_URL.replace(/\/$/, ""),
+    telegramBotToken: e.TELEGRAM_BOT_TOKEN,
+    telegramChatId: e.TELEGRAM_CHAT_ID,
     alertUrl: e.ALERT_URL,
     panelUrl: e.PANEL_URL.replace(/\/$/, ""),
     panelPort: e.PANEL_PORT,
@@ -110,11 +135,20 @@ export function loadConfig(env: NodeJS.ProcessEnv = process.env): Config {
     debounceMs: e.DEBOUNCE_MS,
   };
   if (cfg.nodeEnv === "production") {
-    if (!cfg.internalToken || cfg.internalToken === "cambia-esto") {
-      throw new Error("INTERNAL_TOKEN debe definirse en producción");
-    }
     if (!cfg.waAppSecret) {
       throw new Error("WA_APP_SECRET debe definirse en producción (valida la firma de Meta)");
+    }
+    if (cfg.waAccessToken) {
+      // Modo directo: Meta llama a /webhook y el cerebro envía por la Graph API
+      if (!cfg.waPhoneNumberId) throw new Error("WA_PHONE_NUMBER_ID debe definirse junto con WA_ACCESS_TOKEN");
+      if (!cfg.waVerifyToken) throw new Error("WA_VERIFY_TOKEN debe definirse (lo usa Meta para verificar el webhook)");
+    } else if (cfg.n8nSendUrl) {
+      // Modo n8n
+      if (!cfg.internalToken || cfg.internalToken === "cambia-esto") {
+        throw new Error("INTERNAL_TOKEN debe definirse en producción cuando se usa n8n");
+      }
+    } else {
+      throw new Error("Configura el envío a WhatsApp: WA_ACCESS_TOKEN (directo) o N8N_SEND_URL (n8n)");
     }
   }
   if (cfg.nodeEnv === "production") {

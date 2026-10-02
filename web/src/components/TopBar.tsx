@@ -21,7 +21,7 @@ export function TopBar({ status, onLogout }: { status: Status | null; onLogout: 
             )}
             {status.outbox.failed > 0 && <span className="chip danger">{status.outbox.failed} sin enviar</span>}
             {status.outbox.pending > 0 && <span className="chip">{status.outbox.pending} en cola</span>}
-            {!status.n8nSendConfigured && <span className="chip warn">Envío a WhatsApp sin configurar</span>}
+            {!status.sendConfigured && <span className="chip warn">Envío a WhatsApp sin configurar</span>}
             {!status.alertsConfigured && <span className="chip warn hide-sm">Alertas sin configurar</span>}
             {status.knowledgePending.length > 0 && (
               <span className="chip warn hide-sm" title={status.knowledgePending.join(", ")}>

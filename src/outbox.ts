@@ -8,6 +8,9 @@ export interface SendRequest {
   text: string;
 }
 
+/** Fallo que no se arregla reintentando (mensaje rechazado, token inválido, fuera de la ventana de 24 h…). */
+export class PermanentSendError extends Error {}
+
 export interface Sender {
   send(req: SendRequest): Promise<{ waMessageId?: string }>;
 }
@@ -121,9 +124,9 @@ export class Outbox {
       this.onChange?.(row.message_id);
     } catch (err) {
       const message = (err as Error).message;
-      if (row.attempts + 1 >= this.maxAttempts) {
+      if (err instanceof PermanentSendError || row.attempts + 1 >= this.maxAttempts) {
         this.repo.markOutboxFailed(row, message);
-        this.log.error({ outboxId: row.id, err: message }, "envío fallido definitivamente");
+        this.log.error({ outboxId: row.id, err: message }, err instanceof PermanentSendError ? "envío rechazado por WhatsApp" : "envío fallido definitivamente");
         this.onChange?.(row.message_id);
       } else {
         const delayMs = Math.min(5_000 * 2 ** row.attempts, 15 * 60_000);

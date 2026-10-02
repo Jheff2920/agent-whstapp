@@ -1,4 +1,7 @@
-# Workflows de n8n
+# Workflows de n8n (modo opcional)
+
+> **Por defecto el cerebro habla directo con Meta y avisa por Telegram, sin n8n** (ver [`../deploy/README.md`](../deploy/README.md)).
+> Esta carpeta es para quien prefiera n8n (autoalojado es gratis; n8n Cloud es de pago tras 14 días de prueba).
 
 n8n es la puerta de WhatsApp: recibe los webhooks de Meta y envía los mensajes salientes. El cerebro (este repo)
 hace el agente, la memoria y la cola de salida. Hay dos workflows:

@@ -43,8 +43,9 @@ export interface Detail {
 
 export interface Status {
   llm: { provider: string; model: string };
-  n8nSendConfigured: boolean;
+  sendConfigured: boolean;
   alertsConfigured: boolean;
+  alertChannel: "telegram" | "n8n" | "none";
   knowledgePending: string[];
   outbox: { pending: number; failed: number };
   conversations: { escalado: number; humano: number; unread: number };

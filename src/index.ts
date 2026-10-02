@@ -7,11 +7,12 @@ import { Repo } from "./db/repos.js";
 import { assertKnowledgeReady, KnowledgeStore } from "./knowledge/loader.js";
 import { createProvider } from "./llm/index.js";
 import { EventBus } from "./events.js";
-import { AlertDispatcher, HttpNotifier, NoopNotifier } from "./notify.js";
+import { AlertDispatcher, selectNotifier } from "./notify.js";
 import { HttpSender, LogSender, Outbox } from "./outbox.js";
 import { Auth } from "./panel/auth.js";
 import { buildPanelApp } from "./panel/server.js";
 import { KeyedQueue } from "./queue.js";
+import { CloudApiSender } from "./whatsapp/cloud.js";
 import { buildApp } from "./server.js";
 
 const cfg = loadConfig();
@@ -30,8 +31,22 @@ if (k.pending.length) log.warn({ pending: k.pending }, "conocimiento del negocio
 const provider = createProvider(cfg);
 log.info({ provider: provider.name, model: provider.model }, "modelo de lenguaje configurado");
 
-const sender = cfg.n8nSendUrl ? new HttpSender(cfg.n8nSendUrl, cfg.internalToken) : new LogSender(log);
-if (!cfg.n8nSendUrl) log.warn("N8N_SEND_URL vacío: los mensajes salientes solo se registran en el log");
+// Envío: directo por la Cloud API de Meta, o vía n8n, o solo log (desarrollo)
+const sendMode = cfg.waAccessToken ? "directo" : cfg.n8nSendUrl ? "n8n" : "log";
+const sender =
+  sendMode === "directo"
+    ? new CloudApiSender({
+        accessToken: cfg.waAccessToken,
+        phoneNumberId: cfg.waPhoneNumberId,
+        graphVersion: cfg.waGraphVersion,
+        baseUrl: cfg.waGraphBaseUrl,
+      })
+    : sendMode === "n8n"
+      ? new HttpSender(cfg.n8nSendUrl, cfg.internalToken)
+      : new LogSender(log);
+log.info({ sendMode }, "envío a WhatsApp");
+if (sendMode === "log") log.warn("Sin WA_ACCESS_TOKEN ni N8N_SEND_URL: los mensajes salientes solo se registran en el log");
+if (sendMode === "directo" && !cfg.waPhoneNumberId) log.warn("WA_PHONE_NUMBER_ID vacío: el envío directo fallará");
 
 const bus = new EventBus();
 const outbox = new Outbox(repo, sender, log, {
@@ -40,11 +55,10 @@ const outbox = new Outbox(repo, sender, log, {
     if (conversationId !== undefined) bus.emit({ type: "outbox", conversationId });
   },
 });
-const alerts = new AlertDispatcher(
-  cfg.alertUrl ? new HttpNotifier(cfg.alertUrl, cfg.internalToken) : new NoopNotifier(),
-  log,
-);
-if (!cfg.alertUrl) log.warn("ALERT_URL vacío: no se avisará a los asesores cuando una conversación se escale");
+const { notifier, channel: alertChannel } = selectNotifier(cfg);
+const alerts = new AlertDispatcher(notifier, log);
+if (alertChannel === "none") log.warn("Sin alertas: define TELEGRAM_BOT_TOKEN y TELEGRAM_CHAT_ID (o ALERT_URL de n8n) para avisar a los asesores");
+else log.info({ alertChannel }, "alertas a asesores");
 const queue = new KeyedQueue((err) => log.error({ err }, "error procesando conversación"));
 const agent = new Agent({
   provider,
@@ -81,7 +95,13 @@ const panel = await buildPanelApp({
   bus,
   auth,
   log,
-  info: { provider: provider.name, model: provider.model, knowledgePending: () => knowledge.get().pending },
+  info: {
+    provider: provider.name,
+    model: provider.model,
+    sendConfigured: sendMode !== "log",
+    alertChannel,
+    knowledgePending: () => knowledge.get().pending,
+  },
 });
 
 outbox.start();

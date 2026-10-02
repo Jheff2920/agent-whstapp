@@ -3,29 +3,32 @@
 Agente de ventas 24/7 por WhatsApp para **Red Soluciones**. Atiende a clientes, recuerda a cada uno entre conversaciones
 y deriva a una persona cuando hace falta. Funciona con un **modelo local (Ollama)** o con **Claude** (API), según una variable.
 
-> **Estado:** funcionan el webhook de entrada (firma y deduplicación), el agente con herramientas, la memoria por cliente,
-> la cola de salida con reintentos, la ventana de 24 h, los workflows de n8n, las **alertas a asesores** y el **panel web**
-> para ver conversaciones e intervenir. Pendiente (ver [Hoja de ruta](#hoja-de-ruta)): citas en Google Calendar,
+> **Estado:** funcionan la conexión **directa con la Cloud API de Meta** (webhook con firma y deduplicación, envío con
+> reintentos, ventana de 24 h; **sin n8n**), el agente con herramientas, la memoria por cliente, las **alertas a asesores
+> por Telegram** y el **panel web** para ver conversaciones e intervenir. n8n queda como modo opcional. Pendiente (ver [Hoja de ruta](#hoja-de-ruta)): citas en Google Calendar,
 > aprendizaje global con aprobación, despliegue en Raspberry Pi y llamadas de voz.
 
 ## Cómo funciona
 
 ```
-Meta WhatsApp ─▶ n8n (webhook) ─▶ POST /api/inbound ─▶ cola por cliente ─▶ Agente ─▶ Ollama | Claude
-                                         │                                    │
-                                      SQLite ◀──────────── herramientas ──────┘
+Meta WhatsApp ─▶ POST /webhook (firma X-Hub-Signature-256) ─▶ cola por cliente ─▶ Agente ─▶ Ollama | Claude
+                                         │                                           │
+                                      SQLite ◀──────────────── herramientas ─────────┘
                                          │
-                      outbox ─▶ n8n (webhook de salida) ─▶ Graph API ─▶ cliente
+                        outbox ─▶ Graph API ─▶ cliente          alertas ─▶ Telegram
+
+(modo opcional con n8n: Meta ─▶ n8n ─▶ POST /api/inbound, y outbox ─▶ n8n ─▶ Graph API)
 ```
 
-- **Entrada asíncrona:** `/api/inbound` valida el token interno y la firma `X-Hub-Signature-256`, guarda el mensaje
-  una sola vez (Meta reintenta entregas) y responde `202` de inmediato; la respuesta del agente se genera después.
+- **Entrada asíncrona:** `POST /webhook` (Meta) valida la firma `X-Hub-Signature-256`, guarda el mensaje
+  una sola vez (Meta reintenta entregas) y responde `202` de inmediato; `GET /webhook` responde a la verificación de Meta; la respuesta del agente se genera después.
   Así un modelo local lento no provoca reintentos de Meta.
 - **Un cliente a la vez:** los mensajes de un mismo cliente se procesan en serie; ráfagas de mensajes cortos se agrupan.
 - **Modos de conversación:** `bot`, `humano`, `escalado`. Fuera de `bot` el agente no responde (solo guarda).
   Si una persona toma el control mientras el modelo piensa, la respuesta del bot se descarta.
 - **Si el modelo falla** (Ollama caído, red): se escala a humano y se avisa al cliente; nunca queda en silencio.
-- **Salida confiable:** cada mensaje saliente pasa por una *outbox* en SQLite con reintentos y espera creciente.
+- **Salida confiable:** cada mensaje saliente pasa por una *outbox* en SQLite con reintentos y espera creciente
+  (los rechazos definitivos de WhatsApp, como un token inválido, no se reintentan).
   Fuera de la ventana de 24 h de WhatsApp no se envía texto libre (requiere plantilla aprobada por Meta).
 - **Baja/alta:** el cliente escribe `STOP`/`BAJA` para no recibir más mensajes y `ALTA` para volver.
 
@@ -111,17 +114,19 @@ si lo sirves por HTTPS.
 
 Cuando una conversación se **escala** (el asistente no puede resolver, un reclamo, error del modelo), cuando un cliente
 **escribe mientras atiende una persona** (máximo una alerta cada 10 min por conversación) o cuando se registra una
-**solicitud de cotización**, el cerebro llama al webhook de n8n `ALERT_URL`, que envía un correo con el motivo, el último
-mensaje del cliente y el enlace directo a la conversación en el panel (`PANEL_URL`). Si falla el envío, el asistente sigue
-funcionando: solo se registra el aviso en el log.
+**solicitud de cotización**, el cerebro envía un mensaje por **Telegram** (`TELEGRAM_BOT_TOKEN` y `TELEGRAM_CHAT_ID`) con el
+motivo, el último mensaje del cliente y el enlace directo a la conversación en el panel (`PANEL_URL`). El texto va sin
+formato para que lo que escriba un cliente no pueda alterarlo. Si falla el envío, el asistente sigue funcionando: solo se
+registra en el log. (Con n8n también se puede enviar por correo: `ALERT_URL`.)
 
 ## Variables de entorno
 
-Ver [`.env.example`](./.env.example). Obligatorias en producción: `INTERNAL_TOKEN` (secreto compartido con n8n,
-cabecera `X-Internal-Token`) y `WA_APP_SECRET` (App Secret de Meta, valida la firma). `N8N_SEND_URL` es el webhook de n8n
-que envía por WhatsApp; vacío = los mensajes solo se escriben en el log (modo desarrollo).
+Ver [`.env.example`](./.env.example) y la guía de conexión [`deploy/README.md`](./deploy/README.md). Obligatorias en
+producción: `WA_APP_SECRET` (App Secret de Meta, valida la firma) y, para enviar, `WA_ACCESS_TOKEN` + `WA_PHONE_NUMBER_ID`
++ `WA_VERIFY_TOKEN` (modo directo) o `N8N_SEND_URL` + `INTERNAL_TOKEN` (modo n8n). Sin ninguno de los dos los mensajes solo
+se escriben en el log (desarrollo).
 
-## Contrato con n8n
+## Modo n8n (opcional)
 
 Los workflows ya están creados en el n8n Cloud del proyecto y versionados en [`n8n/`](./n8n/README.md) (pasos de configuración incluidos).
 
@@ -144,22 +149,23 @@ src/
   llm/                 interfaz común + proveedores Ollama y Anthropic
   knowledge/           carga y búsqueda del conocimiento del negocio
   db/                  SQLite (better-sqlite3) y repositorio
-  whatsapp/            firma HMAC y parser del webhook
+  whatsapp/            firma HMAC, parser del webhook y envío directo por la Cloud API
   events.ts            bus de eventos en vivo (panel)
-  notify.ts            alertas a asesores (n8n)
+  notify.ts            alertas a asesores (Telegram o n8n)
   panel/               API, autenticación y servidor del panel
   cli-chat.ts          chat por terminal para pruebas
   cli-hash-password.ts genera ADMIN_PASSWORD_HASH
 web/                   panel web (Vite + React)
 knowledge/             datos del negocio (catálogo, sedes, empresa)
-n8n/                   workflows de WhatsApp (entrada y salida) y guía de configuración
+deploy/                guía de conexión con Meta, Telegram y Tailscale Funnel
+n8n/                   modo opcional: workflows de WhatsApp y alertas
 tests/                 vitest (+ fixtures ficticios)
 ```
 
 ## Hoja de ruta
 
 1. ✅ **Base:** modelo intercambiable, agente, memoria por cliente, entrada/salida, tests.
-2. ✅ n8n (entrada, salida y alertas) y **panel web** de conversaciones con toma de control.
+2. ✅ **Conexión directa con Meta (sin n8n)**, alertas por Telegram y **panel web** de conversaciones con toma de control. n8n queda opcional.
 3. **Citas en tienda** con Google Calendar vía n8n (zona horaria `America/Lima`) y recordatorios.
 4. **Aprendizaje:** resúmenes por cliente y aprendizajes globales que tú apruebas antes de que entren al prompt; seguimientos.
 5. Despliegue en **Raspberry Pi** (systemd, Cloudflare Tunnel, copias de seguridad).
