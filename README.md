@@ -3,9 +3,10 @@
 Agente de ventas 24/7 por WhatsApp para **Red Soluciones**. Atiende a clientes, recuerda a cada uno entre conversaciones
 y deriva a una persona cuando hace falta. Funciona con un **modelo local (Ollama)** o con **Claude** (API), según una variable.
 
-> **Estado: Fase 1 (base).** Ya funcionan: webhook de entrada con firma y deduplicación, agente con herramientas,
-> memoria por cliente, cola de salida con reintentos, ventana de 24 h y chat por terminal. Pendiente (ver [Hoja de ruta](#hoja-de-ruta)):
-> workflows de n8n, panel web, citas en Google Calendar, aprendizaje global con aprobación, despliegue en Raspberry Pi y llamadas de voz.
+> **Estado:** funcionan el webhook de entrada (firma y deduplicación), el agente con herramientas, la memoria por cliente,
+> la cola de salida con reintentos, la ventana de 24 h, los workflows de n8n, las **alertas a asesores** y el **panel web**
+> para ver conversaciones e intervenir. Pendiente (ver [Hoja de ruta](#hoja-de-ruta)): citas en Google Calendar,
+> aprendizaje global con aprobación, despliegue en Raspberry Pi y llamadas de voz.
 
 ## Cómo funciona
 
@@ -79,6 +80,41 @@ en total) y consulta las especificaciones con la herramienta `search_catalog` (p
 Cada producto se transcribió tal como figura en el PDF; los modelos repetidos con distinta configuración
 (SWIFT 2, FALCON 1, SWAN 2, ZD230) se distinguen por `variante`.
 
+## Panel web (bandeja de conversaciones)
+
+Un panel tipo WhatsApp Web para ver las conversaciones en vivo y **tomar el control** cuando haga falta.
+
+- **Bandeja:** filtros (todas, escaladas, con asesor, asistente, sin leer), búsqueda por nombre, número o texto, y aviso
+  cuando la ventana de 24 h de WhatsApp venció.
+- **Hilo:** mensajes del cliente, del asistente y de asesores (con estado: en cola, enviado, entregado, leído, no se envió),
+  notas internas, **Tomar control** / **Devolver al asistente**. Al escribir con el asistente activo, la persona toma el
+  control automáticamente para que no hablen los dos. No deja enviar fuera de la ventana de 24 h ni a clientes dados de baja.
+- **Ficha del cliente:** nombre, etapa comercial, resumen y datos recordados (editables).
+- **Tiempo real:** los mensajes aparecen sin recargar (SSE). Funciona en escritorio y en el celular, con modo claro y oscuro.
+
+```bash
+cp .env.example .env     # define ADMIN_PASSWORD y SESSION_SECRET (openssl rand -hex 32)
+npm run build            # compila el servidor y el panel (web/dist)
+npm start                # panel en http://localhost:3001
+npm run web:dev          # desarrollo del panel con recarga (http://localhost:5173)
+npm run hash-password    # genera ADMIN_PASSWORD_HASH para no guardar la contraseña en claro
+```
+
+**Seguridad:** el panel va en su **propio puerto** (`PANEL_PORT`, por defecto 3001 y solo en `127.0.0.1`). El puerto
+público (`PORT`, 3000), el que se expone con el túnel, solo atiende `/api/inbound` y `/health`. Para verlo desde otros
+equipos de tu red usa `PANEL_HOST=0.0.0.0` (idealmente con Tailscale o Cloudflare Access si quieres acceso desde fuera);
+no lo publiques tal cual en internet. Contraseña con bloqueo tras 5 intentos fallidos, sesión firmada de 12 h en cookie
+`HttpOnly` + `SameSite=Strict` y comprobación de `Origin` en las operaciones que modifican datos. Usa `COOKIE_SECURE=true`
+si lo sirves por HTTPS.
+
+## Alertas a asesores
+
+Cuando una conversación se **escala** (el asistente no puede resolver, un reclamo, error del modelo), cuando un cliente
+**escribe mientras atiende una persona** (máximo una alerta cada 10 min por conversación) o cuando se registra una
+**solicitud de cotización**, el cerebro llama al webhook de n8n `ALERT_URL`, que envía un correo con el motivo, el último
+mensaje del cliente y el enlace directo a la conversación en el panel (`PANEL_URL`). Si falla el envío, el asistente sigue
+funcionando: solo se registra el aviso en el log.
+
 ## Variables de entorno
 
 Ver [`.env.example`](./.env.example). Obligatorias en producción: `INTERNAL_TOKEN` (secreto compartido con n8n,
@@ -109,7 +145,12 @@ src/
   knowledge/           carga y búsqueda del conocimiento del negocio
   db/                  SQLite (better-sqlite3) y repositorio
   whatsapp/            firma HMAC y parser del webhook
+  events.ts            bus de eventos en vivo (panel)
+  notify.ts            alertas a asesores (n8n)
+  panel/               API, autenticación y servidor del panel
   cli-chat.ts          chat por terminal para pruebas
+  cli-hash-password.ts genera ADMIN_PASSWORD_HASH
+web/                   panel web (Vite + React)
 knowledge/             datos del negocio (catálogo, sedes, empresa)
 n8n/                   workflows de WhatsApp (entrada y salida) y guía de configuración
 tests/                 vitest (+ fixtures ficticios)
@@ -118,7 +159,7 @@ tests/                 vitest (+ fixtures ficticios)
 ## Hoja de ruta
 
 1. ✅ **Base:** modelo intercambiable, agente, memoria por cliente, entrada/salida, tests.
-2. n8n: ✅ workflows de entrada y salida creados; pendiente alerta de escalamiento. **Panel web** tipo bandeja para ver conversaciones y tomar el control.
+2. ✅ n8n (entrada, salida y alertas) y **panel web** de conversaciones con toma de control.
 3. **Citas en tienda** con Google Calendar vía n8n (zona horaria `America/Lima`) y recordatorios.
 4. **Aprendizaje:** resúmenes por cliente y aprendizajes globales que tú apruebas antes de que entren al prompt; seguimientos.
 5. Despliegue en **Raspberry Pi** (systemd, Cloudflare Tunnel, copias de seguridad).

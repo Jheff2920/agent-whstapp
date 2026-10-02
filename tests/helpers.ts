@@ -7,6 +7,8 @@ import { Repo } from "../src/db/repos.js";
 import { KnowledgeStore } from "../src/knowledge/loader.js";
 import type { CompleteRequest, CompleteResponse, LLMProvider } from "../src/llm/types.js";
 import { Outbox, type SendRequest, type Sender } from "../src/outbox.js";
+import { EventBus } from "../src/events.js";
+import { AlertDispatcher, type AlertPayload, type Notifier } from "../src/notify.js";
 import { KeyedQueue } from "../src/queue.js";
 import { buildApp } from "../src/server.js";
 
@@ -51,6 +53,13 @@ export class CaptureSender implements Sender {
   }
 }
 
+export class CaptureNotifier implements Notifier {
+  alerts: AlertPayload[] = [];
+  async notify(alert: AlertPayload) {
+    this.alerts.push(alert);
+  }
+}
+
 export function testConfig(over: Record<string, string> = {}): Config {
   return loadConfig({
     DEBOUNCE_MS: "0",
@@ -71,9 +80,14 @@ export function setup(steps: Step[], over: Record<string, string> = {}) {
   const sender = new CaptureSender();
   const outbox = new Outbox(repo, sender, log);
   const queue = new KeyedQueue();
-  const conversations = new ConversationService({ repo, agent, outbox, queue, log, debounceMs: 0 });
+  const bus = new EventBus();
+  const notifier = new CaptureNotifier();
+  const alerts = new AlertDispatcher(notifier, log);
+  const conversations = new ConversationService({
+    repo, agent, outbox, queue, log, debounceMs: 0, bus, alerts, panelUrl: "http://panel.test",
+  });
   const app = buildApp({ cfg, repo, conversations, log });
-  return { cfg, log, repo, provider, knowledge, agent, sender, outbox, queue, conversations, app };
+  return { cfg, log, repo, provider, knowledge, agent, sender, outbox, queue, conversations, app, bus, notifier, alerts };
 }
 
 export function metaPayload(id: string, from: string, text: string, name = "Cliente Test") {

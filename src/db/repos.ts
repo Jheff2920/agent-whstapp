@@ -46,7 +46,31 @@ export interface OutboxRow {
   created_at: string;
 }
 
+export interface ConversationRow {
+  id: number;
+  mode: Mode;
+  unread: number;
+  last_customer_message_at: string | null;
+  last_message_at: string | null;
+  customer_id: number;
+  name: string | null;
+  wa_id: string;
+  stage: string;
+  opted_out: number;
+  last_body: string | null;
+  last_author: Author | null;
+}
+
+export interface ConversationFilter {
+  mode?: Mode;
+  unreadOnly?: boolean;
+  q?: string;
+  limit?: number;
+}
+
 const now = () => new Date().toISOString();
+
+const likeEscape = (s: string) => s.replace(/[\\%_]/g, (c) => `\\${c}`);
 
 export class Repo {
   constructor(readonly db: DB) {}
@@ -264,5 +288,99 @@ export class Repo {
         .run(error, row.id);
       this.db.prepare("UPDATE messages SET status = 'failed' WHERE id = ?").run(row.message_id);
     })();
+  }
+
+  // ---- consultas del panel ----
+
+  listConversations(f: ConversationFilter = {}): ConversationRow[] {
+    const where: string[] = [];
+    const args: (string | number)[] = [];
+    if (f.mode) {
+      where.push("c.mode = ?");
+      args.push(f.mode);
+    }
+    if (f.unreadOnly) where.push("c.unread > 0");
+    const q = f.q?.trim();
+    if (q) {
+      const like = `%${likeEscape(q)}%`;
+      where.push(
+        `(u.name LIKE ? ESCAPE '\\' OR u.wa_id LIKE ? ESCAPE '\\' OR EXISTS
+          (SELECT 1 FROM messages m WHERE m.conversation_id = c.id AND m.author != 'nota' AND m.body LIKE ? ESCAPE '\\'))`,
+      );
+      args.push(like, like, like);
+    }
+    args.push(Math.min(f.limit ?? 200, 500));
+    return this.db
+      .prepare(
+        `SELECT c.id, c.mode, c.unread, c.last_customer_message_at, c.last_message_at,
+                u.id AS customer_id, u.name, u.wa_id, u.stage, u.opted_out,
+                (SELECT body FROM messages m WHERE m.conversation_id = c.id AND m.author != 'nota' ORDER BY m.id DESC LIMIT 1) AS last_body,
+                (SELECT author FROM messages m WHERE m.conversation_id = c.id AND m.author != 'nota' ORDER BY m.id DESC LIMIT 1) AS last_author
+         FROM conversations c JOIN customers u ON u.id = c.customer_id
+         ${where.length ? "WHERE " + where.join(" AND ") : ""}
+         ORDER BY COALESCE(c.last_message_at, '') DESC, c.id DESC LIMIT ?`,
+      )
+      .all(...args) as ConversationRow[];
+  }
+
+  /** Todos los mensajes (incluidas notas internas) en orden cronológico. */
+  allMessages(conversationId: number, limit = 300): Message[] {
+    const rows = this.db
+      .prepare("SELECT * FROM messages WHERE conversation_id = ? ORDER BY id DESC LIMIT ?")
+      .all(conversationId, limit) as Message[];
+    return rows.reverse();
+  }
+
+  markRead(conversationId: number): void {
+    this.db.prepare("UPDATE conversations SET unread = 0 WHERE id = ?").run(conversationId);
+  }
+
+  updateCustomer(id: number, patch: { name?: string | null; stage?: string; summary?: string | null }): void {
+    const sets: string[] = [];
+    const args: (string | null | number)[] = [];
+    for (const key of ["name", "stage", "summary"] as const) {
+      if (patch[key] !== undefined) {
+        sets.push(`${key} = ?`);
+        args.push(patch[key] as string | null);
+      }
+    }
+    if (!sets.length) return;
+    this.db.prepare(`UPDATE customers SET ${sets.join(", ")}, updated_at = ? WHERE id = ?`).run(...args, now(), id);
+  }
+
+  deleteFact(customerId: number, key: string): void {
+    this.db.prepare("DELETE FROM customer_facts WHERE customer_id = ? AND key = ?").run(customerId, key);
+  }
+
+  outboxCounts(): { pending: number; failed: number } {
+    const row = this.db
+      .prepare(
+        `SELECT SUM(status = 'pending') AS pending, SUM(status = 'failed') AS failed FROM outbox`,
+      )
+      .get() as { pending: number | null; failed: number | null };
+    return { pending: row.pending ?? 0, failed: row.failed ?? 0 };
+  }
+
+  conversationCounts(): { escalado: number; humano: number; unread: number } {
+    const row = this.db
+      .prepare(
+        `SELECT SUM(mode = 'escalado') AS escalado, SUM(mode = 'humano') AS humano, SUM(unread > 0) AS unread FROM conversations`,
+      )
+      .get() as { escalado: number | null; humano: number | null; unread: number | null };
+    return { escalado: row.escalado ?? 0, humano: row.humano ?? 0, unread: row.unread ?? 0 };
+  }
+
+  conversationIdOfMessage(messageId: number): number | undefined {
+    const row = this.db.prepare("SELECT conversation_id AS id FROM messages WHERE id = ?").get(messageId) as
+      | { id: number }
+      | undefined;
+    return row?.id;
+  }
+
+  latestQuoteSummary(customerId: number): string | undefined {
+    const row = this.db
+      .prepare("SELECT summary FROM quote_requests WHERE customer_id = ? ORDER BY id DESC LIMIT 1")
+      .get(customerId) as { summary: string } | undefined;
+    return row?.summary;
   }
 }

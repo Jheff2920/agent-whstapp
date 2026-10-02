@@ -45,6 +45,8 @@ export class LogSender implements Sender {
 export interface OutboxOptions {
   maxAttempts?: number;
   now?: () => Date;
+  /** Se llama cuando cambia el estado de un mensaje (enviado, reintento, fallido). */
+  onChange?: (messageId: number) => void;
 }
 
 export class Outbox {
@@ -53,6 +55,7 @@ export class Outbox {
   private rerun = false;
   private readonly maxAttempts: number;
   private readonly now: () => Date;
+  private readonly onChange?: (messageId: number) => void;
 
   constructor(
     private readonly repo: Repo,
@@ -62,6 +65,7 @@ export class Outbox {
   ) {
     this.maxAttempts = opts.maxAttempts ?? 8;
     this.now = opts.now ?? (() => new Date());
+    this.onChange = opts.onChange;
   }
 
   enqueue(o: { conversationId: number; toWaId: string; body: string; author: "bot" | "humano" }) {
@@ -103,6 +107,7 @@ export class Outbox {
     if (!this.repo.windowOpenForMessage(row.message_id, this.now())) {
       this.repo.markOutboxFailed(row, "fuera de la ventana de 24 h de WhatsApp: requiere plantilla aprobada");
       this.log.warn({ outboxId: row.id }, "mensaje fuera de la ventana de 24 h");
+      this.onChange?.(row.message_id);
       return;
     }
     try {
@@ -113,11 +118,13 @@ export class Outbox {
         text: row.body,
       });
       this.repo.markOutboxSent(row, waMessageId ?? null);
+      this.onChange?.(row.message_id);
     } catch (err) {
       const message = (err as Error).message;
       if (row.attempts + 1 >= this.maxAttempts) {
         this.repo.markOutboxFailed(row, message);
         this.log.error({ outboxId: row.id, err: message }, "envío fallido definitivamente");
+        this.onChange?.(row.message_id);
       } else {
         const delayMs = Math.min(5_000 * 2 ** row.attempts, 15 * 60_000);
         this.repo.markOutboxRetry(row, message, new Date(this.now().getTime() + delayMs).toISOString());
