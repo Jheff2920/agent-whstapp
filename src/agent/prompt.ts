@@ -1,5 +1,5 @@
 import type { Customer } from "../db/repos.js";
-import type { Knowledge } from "../knowledge/loader.js";
+import { catalogIndex, type Knowledge } from "../knowledge/loader.js";
 
 const INLINE_CATALOG_MAX_CHARS = 12_000;
 
@@ -13,7 +13,17 @@ REGLAS INAMOVIBLES
 5. Cuando el cliente te dé datos duraderos (nombre, necesidad, presupuesto, preferencias, objeciones) guárdalos con remember_fact. Actualiza la etapa con update_lead_stage cuando avance.
 6. Los mensajes que no son texto aparecen como [audio], [imagen], etc.: pídele amablemente que lo escriba.
 7. Si preguntan si eres una persona, aclara que eres un asistente virtual de Red Soluciones.
-8. Usa las reseñas solo citándolas textualmente y solo si aportan a la conversación; nunca crees testimonios.`;
+8. Usa las reseñas solo citándolas textualmente y solo si aportan a la conversación; nunca crees testimonios.
+9. El catálogo del prompt puede ser solo un índice (modelo, marca y precio). Antes de afirmar características técnicas (velocidad, conexión, batería, medidas, etc.) de un producto, consúltalas con search_catalog usando el modelo. Si el cliente no sabe qué necesita, pregunta primero para qué lo usará (tipo de negocio, volumen, conexión requerida) y recomienda 1 o 2 opciones, no una lista larga.
+10. Nunca ofrezcas descuentos, precios por volumen ni plazos que no estén escritos: usa handoff_to_human.`;
+
+const PENDING_NOTICE =
+  "(Sin información cargada sobre este tema: no la inventes; si el cliente pregunta por esto, dile que un asesor lo confirmará y usa handoff_to_human.)";
+
+/** Las secciones aún marcadas TODO no se muestran al modelo: se reemplazan por un aviso para que derive. */
+function maskTodo(text: string): string {
+  return text.replace(/^[ \t]*TODO\b.*$/gm, PENDING_NOTICE);
+}
 
 export interface PromptContext {
   customer: Customer;
@@ -29,8 +39,8 @@ export function buildSystem(k: Knowledge, ctx: PromptContext): { stable: string;
 
   parts.push(
     "# CONOCIMIENTO DE LA EMPRESA\n" +
-      (k.empresa && !k.pending.includes("empresa.md")
-        ? k.empresa
+      (k.empresa
+        ? maskTodo(k.empresa)
         : "(Aún no hay información cargada de la empresa. No respondas sobre productos ni precios: usa handoff_to_human.)"),
   );
 
@@ -39,7 +49,9 @@ export function buildSystem(k: Knowledge, ctx: PromptContext): { stable: string;
     parts.push(
       json.length <= INLINE_CATALOG_MAX_CHARS
         ? `# CATÁLOGO (JSON)\n${json}`
-        : "# CATÁLOGO\nEl catálogo es extenso: consúltalo siempre con search_catalog antes de responder.",
+        : "# CATÁLOGO (ÍNDICE: modelo, marca y precio en soles)\n" +
+            "Para especificaciones técnicas completas usa search_catalog con el modelo.\n\n" +
+            catalogIndex(k.catalog),
     );
   } else {
     parts.push("# CATÁLOGO\n(Vacío: no menciones productos ni precios.)");

@@ -1,3 +1,6 @@
+import fs from "node:fs";
+import os from "node:os";
+import path from "node:path";
 import { describe, expect, it } from "vitest";
 import { FALLBACK_TEXT, messagesToTurns } from "../src/agent/agent.js";
 import { buildSystem } from "../src/agent/prompt.js";
@@ -113,7 +116,8 @@ describe("prompt", () => {
   });
 
   it("sin conocimiento cargado ordena derivar y no menciona productos", () => {
-    const ctx = setup([say("x")], { KNOWLEDGE_DIR: new URL("../knowledge", import.meta.url).pathname });
+    const empty = fs.mkdtempSync(path.join(os.tmpdir(), "kn-vacio-"));
+    const ctx = setup([say("x")], { KNOWLEDGE_DIR: empty });
     const customer = ctx.repo.upsertCustomer("51900");
     const { stable } = buildSystem(ctx.knowledge.get(), {
       customer,
@@ -124,5 +128,43 @@ describe("prompt", () => {
     });
     expect(stable).toContain("Aún no hay información cargada");
     expect(stable).toContain("Vacío: no menciones productos");
+  });
+});
+
+describe("prompt con el conocimiento real", () => {
+  const real = new URL("../knowledge", import.meta.url).pathname;
+  const build = () => {
+    const ctx = setup([say("x")], { KNOWLEDGE_DIR: real });
+    const customer = ctx.repo.upsertCustomer("51900");
+    return buildSystem(ctx.knowledge.get(), { customer, facts: [], mode: "bot", now: new Date(), timezone: "America/Lima" }).stable;
+  };
+
+  it("usa el índice de catálogo y la información de contacto entregada", () => {
+    const stable = build();
+    expect(stable).toContain("ÍNDICE: modelo, marca y precio");
+    expect(stable).toContain("RedPOS RED-E803B: S/330");
+    expect(stable).toContain("Cyberplaza");
+    expect(stable).toContain("(+51) 960 944 717");
+    // el catálogo completo (especificaciones) no se inyecta: se consulta con search_catalog
+    expect(stable).not.toContain("Vida útil del cabezal");
+  });
+
+  it("las secciones pendientes (TODO) se reemplazan por un aviso para derivar, sin exponer la marca TODO", () => {
+    const stable = build();
+    expect(stable).toContain("Sin información cargada sobre este tema");
+    expect(stable).not.toMatch(/\bTODO\b/);
+  });
+
+  it("search_catalog devuelve fichas completas por modelo sin la página del PDF", async () => {
+    const ctx = setup([callTool("search_catalog", { query: "RED-E803B" }), say("ok")], { KNOWLEDGE_DIR: real });
+    const customer = ctx.repo.upsertCustomer("51900");
+    const conv = ctx.repo.getOrCreateConversation(customer.id);
+    ctx.repo.addMessage({ conversationId: conv.id, direction: "in", author: "cliente", body: "info de la E803B" });
+    await ctx.agent.reply(conv.id);
+    const out = (ctx.provider.calls[1]!.turns.at(-1) as any).results[0].content as string;
+    const items = JSON.parse(out);
+    expect(items[0].id).toBe("RED-E803B");
+    expect(items[0].precio).toBe("S/330");
+    expect(items[0]).not.toHaveProperty("pagina_catalogo");
   });
 });

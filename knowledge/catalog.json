@@ -1,1 +1,1347 @@
-[]
+[
+  {
+    "id": "RED-E803B",
+    "categoria": "Impresoras ticketeras térmicas de 80 mm",
+    "marca": "RedPOS",
+    "modelo": "RED-E803B",
+    "caracteristicas": [
+      "Velocidad de impresión: 250 mm/s",
+      "Conexión: USB + Bluetooth",
+      "Corte automático",
+      "Vida útil del cabezal: 100KM",
+      "Ancho de papel: 80mm"
+    ],
+    "precio": "S/330",
+    "garantia": "1 año",
+    "pagina_catalogo": 3
+  },
+  {
+    "id": "RED-E803L",
+    "categoria": "Impresoras ticketeras térmicas de 80 mm",
+    "marca": "RedPOS",
+    "modelo": "RED-E803L",
+    "caracteristicas": [
+      "Velocidad de impresión: 250 mm/s",
+      "Conexión: USB + Ethernet",
+      "Corte automático",
+      "Vida útil del cabezal: 100KM",
+      "Ancho de papel: 80mm"
+    ],
+    "precio": "S/300",
+    "garantia": "1 año",
+    "pagina_catalogo": 3
+  },
+  {
+    "id": "RED-V320M",
+    "categoria": "Impresoras ticketeras térmicas de 80 mm",
+    "marca": "RedPOS",
+    "modelo": "RED-V320M",
+    "caracteristicas": [
+      "Velocidad de impresión: 230 mm/s",
+      "Conexión: USB + Ethernet",
+      "Corte automático",
+      "Vida útil del cabezal: 100KM",
+      "Ancho de papel: 80mm"
+    ],
+    "precio": "S/350",
+    "garantia": "1 año",
+    "pagina_catalogo": 3
+  },
+  {
+    "id": "POS-808",
+    "categoria": "Impresoras ticketeras térmicas de 80 mm",
+    "marca": "CBX",
+    "modelo": "POS-808",
+    "caracteristicas": [
+      "Velocidad de impresión: 260 mm/s",
+      "Conexión: USB + Ethernet + Serial",
+      "Ancho de papel: 80mm",
+      "Compatible con Contadoras de Billetes RedPos"
+    ],
+    "precio": "S/550",
+    "garantia": "1 año",
+    "pagina_catalogo": 4
+  },
+  {
+    "id": "RED-Q80K",
+    "categoria": "Impresoras ticketeras térmicas de 80 mm",
+    "marca": "RedPOS",
+    "modelo": "RED-Q80K",
+    "caracteristicas": [
+      "Velocidad de impresión: 230 mm/s",
+      "Conexión: USB + Ethernet",
+      "Luz LED intermitente y pitido fuerte",
+      "Vida útil del cabezal: 150KM",
+      "Ancho de papel: 80mm"
+    ],
+    "precio": "S/420",
+    "garantia": "1 año",
+    "pagina_catalogo": 4
+  },
+  {
+    "id": "XP-R330H",
+    "categoria": "Impresoras ticketeras térmicas de 80 mm",
+    "marca": "Xprinter",
+    "modelo": "XP-R330H",
+    "caracteristicas": [
+      "Velocidad de impresión: 300 mm/s",
+      "Conexión: USB",
+      "Vida útil del cabezal: 150KM",
+      "Ancho de papel: 80mm",
+      "Resistente a humedad y altas temperaturas"
+    ],
+    "precio": "S/430",
+    "garantia": "1 año",
+    "pagina_catalogo": 4
+  },
+  {
+    "id": "RED-R330H",
+    "categoria": "Impresoras ticketeras térmicas de 80 mm",
+    "marca": "RedPOS",
+    "modelo": "RED-R330H",
+    "caracteristicas": [
+      "Velocidad de impresión: 300 mm/s",
+      "Conexión: USB + Ethernet",
+      "Vida útil del cabezal: 150KM",
+      "Ancho de papel: 80mm",
+      "Resistente a humedad y altas temperaturas"
+    ],
+    "precio": "S/450",
+    "garantia": "1 año",
+    "pagina_catalogo": 5
+  },
+  {
+    "id": "TM-T20IV-L",
+    "categoria": "Impresoras ticketeras térmicas de 80 mm",
+    "marca": "Epson",
+    "modelo": "TM-T20IV-L",
+    "caracteristicas": [
+      "Velocidad de impresión: 200 mm/s",
+      "Conexión: USB",
+      "Corte automático",
+      "Vida útil del cabezal: 120KM",
+      "Ancho de papel: 80mm"
+    ],
+    "precio": "S/580",
+    "garantia": "1 año",
+    "pagina_catalogo": 5
+  },
+  {
+    "id": "TM-T20IV-SP",
+    "categoria": "Impresoras ticketeras térmicas de 80 mm",
+    "marca": "Epson",
+    "modelo": "TM-T20IV-SP",
+    "caracteristicas": [
+      "Velocidad de impresión: 310 mm/s",
+      "Conexión: USB + Ethernet",
+      "Corte automático",
+      "Vida útil del cabezal: 120KM",
+      "Ancho de papel: 80mm"
+    ],
+    "precio": "S/750",
+    "garantia": "1 año",
+    "pagina_catalogo": 5
+  },
+  {
+    "id": "RED-E802B",
+    "categoria": "Impresoras ticketeras térmicas de 80 mm",
+    "marca": "RedPOS",
+    "modelo": "RED-E802B",
+    "caracteristicas": [
+      "Velocidad de impresión: 260 mm/seg",
+      "Conexión: USB + Bluetooth",
+      "Vida útil del cabezal: 110KM",
+      "Ancho de papel: 80mm",
+      "Corte automático"
+    ],
+    "precio": "S/360",
+    "garantia": "1 año",
+    "pagina_catalogo": 6
+  },
+  {
+    "id": "RED-H801",
+    "categoria": "Impresoras ticketeras térmicas de 80 mm",
+    "marca": "RedPOS",
+    "modelo": "RED-H801",
+    "caracteristicas": [
+      "Velocidad de impresión: 300 mm/seg",
+      "Conexión: USB + Bluetooth",
+      "Vida útil del cabezal: 150KM",
+      "Ancho de papel: 80mm",
+      "Luz LED intermitente y pitido fuerte"
+    ],
+    "precio": "S/430",
+    "garantia": "1 año",
+    "pagina_catalogo": 6
+  },
+  {
+    "id": "TM-M30",
+    "categoria": "Impresoras ticketeras térmicas de 80 mm",
+    "marca": "Epson",
+    "modelo": "TM-M30",
+    "caracteristicas": [
+      "Velocidad de impresión: 260 mm/seg",
+      "Conexión: USB + Bluetooth",
+      "Vida útil del cabezal: 110KM",
+      "Ancho de papel: 80mm",
+      "Corte automático"
+    ],
+    "precio": "S/1250",
+    "garantia": "1 año",
+    "pagina_catalogo": 6
+  },
+  {
+    "id": "RED-P11",
+    "categoria": "Impresoras ticketeras de 58 mm",
+    "marca": "RedPOS",
+    "modelo": "RED-P11",
+    "tipo": "Impresora portátil",
+    "caracteristicas": [
+      "Velocidad de impresión: 90 mm/s",
+      "Conexión: USB + Bluetooth",
+      "Resolución: 203 DPI",
+      "Ancho de papel: 58mm",
+      "Batería: 1800 mAh recargable"
+    ],
+    "precio": "S/140",
+    "garantia": "1 año",
+    "pagina_catalogo": 8
+  },
+  {
+    "id": "RED-HQ201",
+    "categoria": "Impresoras ticketeras de 58 mm",
+    "marca": "RedPOS",
+    "modelo": "RED-HQ201",
+    "tipo": "Impresora portátil (impresora dual)",
+    "caracteristicas": [
+      "Velocidad de impresión: 70 mm/s",
+      "Conexión: USB + Bluetooth",
+      "Impresora dual: Recibos y Etiquetas",
+      "Ancho de papel: 58mm",
+      "Batería: 1850 mAh recargable"
+    ],
+    "precio": "S/160",
+    "garantia": "1 año",
+    "pagina_catalogo": 8
+  },
+  {
+    "id": "RED-P15",
+    "categoria": "Impresoras ticketeras de 58 mm",
+    "marca": "RedPOS",
+    "modelo": "RED-P15",
+    "tipo": "Impresora portátil",
+    "caracteristicas": [
+      "Velocidad de impresión: 90 mm/s",
+      "Conexión: USB + Bluetooth",
+      "Resolución: 203 DPI",
+      "Ancho de papel: 58mm",
+      "Batería: 1800 mAh recargable"
+    ],
+    "precio": "S/149",
+    "garantia": "1 año",
+    "pagina_catalogo": 8
+  },
+  {
+    "id": "RED-H58",
+    "categoria": "Impresoras ticketeras de 58 mm",
+    "marca": "RedPOS",
+    "modelo": "RED-H58",
+    "tipo": "Impresora de escritorio",
+    "caracteristicas": [
+      "Velocidad de impresión: 90 mm/s",
+      "Conexión: USB + Bluetooth",
+      "Corte automático: NO",
+      "Resolución: 203 DPI",
+      "Ancho de papel: 58mm"
+    ],
+    "precio": "S/135",
+    "garantia": "1 año",
+    "pagina_catalogo": 8
+  },
+  {
+    "id": "RED-P29L",
+    "categoria": "Impresoras ticketeras portátiles de 80 mm",
+    "marca": "RedPOS",
+    "modelo": "RED-P29L",
+    "tipo": "Impresora dual",
+    "caracteristicas": [
+      "Velocidad de impresión: 90 mm/s",
+      "Conexión: USB + Bluetooth",
+      "Impresora dual: Recibos y Etiquetas",
+      "Ancho de papel: 80mm",
+      "Pantalla OLED",
+      "Batería: 2200 mAh recargable"
+    ],
+    "precio": "S/249",
+    "garantia": "1 año",
+    "pagina_catalogo": 10
+  },
+  {
+    "id": "RED-HQ300",
+    "categoria": "Impresoras ticketeras portátiles de 80 mm",
+    "marca": "RedPOS",
+    "modelo": "RED-HQ300",
+    "tipo": "Impresora dual",
+    "caracteristicas": [
+      "Velocidad de impresión: 90 mm/s",
+      "Conexión: USB + Bluetooth",
+      "Impresora dual: Recibos y Etiquetas",
+      "Ancho de papel: 80mm",
+      "Pantalla OLED",
+      "Batería: 2500 mAh recargable"
+    ],
+    "precio": "S/299",
+    "garantia": "1 año",
+    "pagina_catalogo": 10
+  },
+  {
+    "id": "RED-HQ400",
+    "categoria": "Impresoras ticketeras portátiles de 80 mm",
+    "marca": "RedPOS",
+    "modelo": "RED-HQ400",
+    "tipo": "Impresora dual",
+    "caracteristicas": [
+      "Velocidad de impresión: 78 mm/s",
+      "Conexión: USB + Bluetooth",
+      "Impresora dual: Recibos y Etiquetas",
+      "Ancho de papel: 4 pulgadas",
+      "Pantalla LED de 0.96\"",
+      "Batería: 5200 mAh recargable"
+    ],
+    "precio": "S/450",
+    "garantia": "1 año",
+    "pagina_catalogo": 10
+  },
+  {
+    "id": "80X40MM",
+    "categoria": "Contómetros térmicos para impresoras (rollos de papel térmico)",
+    "marca": "RedPOS",
+    "modelo": "80X40MM",
+    "caracteristicas": [
+      "Cantidad por caja: 80 Rollos",
+      "Ancho: 80 x 40 mm",
+      "Papel térmico de 55 gramos",
+      "Medidas: 80x40x13",
+      "Metraje: 18 metros"
+    ],
+    "precios": {
+      "unidad": "S/3.50",
+      "caja": "S/240"
+    },
+    "garantia": "1 año",
+    "pagina_catalogo": 12
+  },
+  {
+    "id": "57X40MM",
+    "categoria": "Contómetros térmicos para impresoras (rollos de papel térmico)",
+    "marca": "RedPOS",
+    "modelo": "57X40MM",
+    "caracteristicas": [
+      "Cantidad por caja: 100 Rollos",
+      "Ancho: 58 x 40 mm",
+      "Papel térmico de 55 gramos",
+      "Medidas: 58x40x13",
+      "Metraje: 18 metros"
+    ],
+    "precios": {
+      "unidad": "S/3.00",
+      "caja": "S/200"
+    },
+    "garantia": "1 año",
+    "notas": "El modelo se llama 57X40MM pero la ficha del catálogo indica ancho 58 x 40 mm.",
+    "pagina_catalogo": 12
+  },
+  {
+    "id": "80X80MM",
+    "categoria": "Contómetros térmicos para impresoras (rollos de papel térmico)",
+    "marca": "RedPOS",
+    "modelo": "80X80MM",
+    "caracteristicas": [
+      "Cantidad por caja: 20 Rollos",
+      "Ancho: 80 x 80 mm",
+      "Papel térmico de 55 gramos",
+      "Medidas: 80x80x13",
+      "Metraje: 70 metros"
+    ],
+    "precios": {
+      "unidad": "S/6.00",
+      "caja": "S/100"
+    },
+    "garantia": "1 año",
+    "pagina_catalogo": 12
+  },
+  {
+    "id": "RED-8602",
+    "categoria": "Lector de barra omnidireccional",
+    "marca": "RedPOS",
+    "modelo": "RED-8602",
+    "caracteristicas": [
+      "Interface USB",
+      "Tecnología IMAGER 1D y 2D",
+      "Fuente de luz: LED rojo de 630nm",
+      "Resistencia: Soporta caídas de hasta 1.5 metros",
+      "Campo de visión: 44° (Horizontal), 34° (Vertical)"
+    ],
+    "precio": "S/299",
+    "garantia": "1 año",
+    "pagina_catalogo": 14
+  },
+  {
+    "id": "RED-9608H",
+    "categoria": "Lector de barra omnidireccional",
+    "marca": "RedPOS",
+    "modelo": "RED-9608H",
+    "caracteristicas": [
+      "Interface USB",
+      "Tecnología IMAGER 1D y 2D",
+      "Fuente de luz: LED rojo de 650nm",
+      "Tecnología de sensor: Imagen CMOS",
+      "Campo de visión: 34° (Horizontal), 30° (Vertical)"
+    ],
+    "precio": "S/399",
+    "garantia": "1 año",
+    "pagina_catalogo": 14
+  },
+  {
+    "id": "RED-8808H",
+    "categoria": "Lector de barra omnidireccional",
+    "marca": "RedPOS",
+    "modelo": "RED-8808H",
+    "caracteristicas": [
+      "Interface USB",
+      "Tecnología IMAGER 1D y 2D",
+      "Fuente de luz: LED rojo de 650nm",
+      "Resolución del sensor: hasta 1280 x 1024 píxeles",
+      "Campo de visión: 34° horizontal y 28° vertical"
+    ],
+    "precio": "S/780",
+    "garantia": "1 año",
+    "pagina_catalogo": 14
+  },
+  {
+    "id": "RED-8809H",
+    "categoria": "Lector de barra omnidireccional",
+    "marca": "RedPOS",
+    "modelo": "RED-8809H",
+    "caracteristicas": [
+      "Interface USB",
+      "Tecnología IMAGER 1D y 2D",
+      "Fuente de luz: LED rojo de 650nm",
+      "Resolución del sensor: hasta 1280 x 1024 píxeles",
+      "Campo de visión: 34° horizontal y 28° vertical"
+    ],
+    "precio": "S/900",
+    "garantia": "1 año",
+    "pagina_catalogo": 14
+  },
+  {
+    "id": "RED-2055",
+    "categoria": "Lector de código de barras con cable USB",
+    "marca": "RedPOS",
+    "modelo": "RED-2055",
+    "caracteristicas": [
+      "Tipo de escaneo: 1D",
+      "Tecnología de lectura: Láser lineal",
+      "Fuente de luz: Láser rojo 650nm",
+      "Velocidad de escaneo: 100 escaneos/seg"
+    ],
+    "precio": "S/130",
+    "garantia": "1 año",
+    "pagina_catalogo": 16
+  },
+  {
+    "id": "RED-L3S",
+    "categoria": "Lector de código de barras con cable USB",
+    "marca": "RedPOS",
+    "modelo": "RED-L3S",
+    "caracteristicas": [
+      "Tipo de escaneo: 1D",
+      "Tecnología de lectura: Imager CCD lineal",
+      "Fuente de luz: LED rojo de 632 nm",
+      "Velocidad de escaneo: 200 escaneos/seg"
+    ],
+    "precio": "S/120",
+    "garantia": "1 año",
+    "pagina_catalogo": 16
+  },
+  {
+    "id": "RED-W3S",
+    "categoria": "Lector de código de barras con cable USB",
+    "marca": "RedPOS",
+    "modelo": "RED-W3S",
+    "caracteristicas": [
+      "Tipo de escaneo: 1D",
+      "Tecnología de lectura: Imager CCD lineal",
+      "Fuente de luz: LED rojo de 632 nm",
+      "Velocidad de escaneo: 200 escaneos/seg"
+    ],
+    "precio": "S/160",
+    "garantia": "1 año",
+    "pagina_catalogo": 16
+  },
+  {
+    "id": "RED-L5S",
+    "categoria": "Lector de código de barras con cable USB",
+    "marca": "RedPOS",
+    "modelo": "RED-L5S",
+    "caracteristicas": [
+      "Tipo de escaneo: 1D y 2D",
+      "Tecnología de lectura: Imager CMOS",
+      "Fuente de luz: luz de puntería LED roja, iluminación LED blanca",
+      "Velocidad de escaneo: 300 escaneos/seg"
+    ],
+    "precio": "S/180",
+    "garantia": "1 año",
+    "pagina_catalogo": 17
+  },
+  {
+    "id": "RED-D30",
+    "categoria": "Lector de código de barras con cable USB",
+    "marca": "RedPOS",
+    "modelo": "RED-D30",
+    "caracteristicas": [
+      "Tipo de escaneo: 1D y 2D",
+      "Tecnología de lectura: Imager CMOS",
+      "Fuente de luz: luz de puntería LED verde, iluminación LED blanca",
+      "Velocidad de escaneo: 300 escaneos/seg"
+    ],
+    "precio": "S/220",
+    "garantia": "1 año",
+    "pagina_catalogo": 17
+  },
+  {
+    "id": "LS-1203",
+    "categoria": "Lector de código de barras con cable USB",
+    "marca": "Zebra",
+    "modelo": "LS-1203",
+    "caracteristicas": [
+      "Tipo de escaneo: 1D",
+      "Tecnología de lectura: Láser lineal",
+      "Fuente de luz: Diodos láser de 650 nm",
+      "Velocidad de escaneo: 100 escaneos/seg"
+    ],
+    "precio": "S/270",
+    "garantia": "1 año",
+    "pagina_catalogo": 17
+  },
+  {
+    "id": "LS-2208",
+    "categoria": "Lector de código de barras con cable USB",
+    "marca": "Symbol",
+    "modelo": "LS-2208",
+    "caracteristicas": [
+      "Tipo de escaneo: 1D",
+      "Tecnología de lectura: Láser lineal",
+      "Fuente de luz: Diodos de láser Clase 2 de 650 nm",
+      "Velocidad de escaneo: 100 escaneos/seg"
+    ],
+    "precio": "S/360",
+    "garantia": "1 año",
+    "pagina_catalogo": 18
+  },
+  {
+    "id": "LI-2208",
+    "categoria": "Lector de código de barras con cable USB",
+    "marca": "Symbol",
+    "modelo": "LI-2208",
+    "caracteristicas": [
+      "Tipo de escaneo: 1D",
+      "Tecnología de lectura: Láser lineal",
+      "Fuente de luz: Diodos de láser Clase 1 de 617 nm",
+      "Velocidad de escaneo: 547 escaneos/seg"
+    ],
+    "precio": "S/380",
+    "garantia": "1 año",
+    "pagina_catalogo": 18
+  },
+  {
+    "id": "DS-2208",
+    "categoria": "Lector de código de barras con cable USB",
+    "marca": "Zebra",
+    "modelo": "DS-2208",
+    "caracteristicas": [
+      "Tipo de escaneo: 1D y 2D",
+      "Tecnología de lectura: Láser lineal",
+      "Fuente de luz: LED ámbar lineal de 624 nm",
+      "Velocidad de escaneo: 240 escaneos/seg"
+    ],
+    "precio": "S/550",
+    "garantia": "1 año",
+    "pagina_catalogo": 18
+  },
+  {
+    "id": "RED-S6S",
+    "categoria": "Lector de código de barras inalámbrico",
+    "marca": "RedPOS",
+    "modelo": "RED-S6S",
+    "caracteristicas": [
+      "Tipo de escaneo: 1D",
+      "Tecnología de lectura: Imager CCD lineal",
+      "Velocidad de escaneo: 200 escaneos/seg",
+      "Batería: 2000 mAh recargable",
+      "Alcance: 15 mts"
+    ],
+    "precio": "S/180",
+    "garantia": "1 año",
+    "pagina_catalogo": 20
+  },
+  {
+    "id": "RED-D30RB",
+    "categoria": "Lector de código de barras inalámbrico",
+    "marca": "RedPOS",
+    "modelo": "RED-D30RB",
+    "caracteristicas": [
+      "Tipo de escaneo: 1D y 2D",
+      "Tecnología de lectura: Imager CMOS",
+      "Velocidad de escaneo: 300 escaneos/seg",
+      "Conectividad: 2,4 GHz USB + Bluetooth",
+      "Batería: 2000 mAh recargable",
+      "Alcance: 25 mts"
+    ],
+    "precio": "S/249",
+    "garantia": "1 año",
+    "pagina_catalogo": 20
+  },
+  {
+    "id": "RED-1228BC",
+    "categoria": "Lector de código de barras inalámbrico",
+    "marca": "RedPOS",
+    "modelo": "RED-1228BC",
+    "caracteristicas": [
+      "Tipo de escaneo: 1D",
+      "Tecnología de lectura: Imager CCD lineal",
+      "Velocidad de escaneo: 300 escaneos/seg",
+      "Conectividad: 2,4 GHz USB + Bluetooth",
+      "Batería: 2600 mAh recargable",
+      "Alcance: 25 mts"
+    ],
+    "precio": "S/199",
+    "garantia": "1 año",
+    "pagina_catalogo": 20
+  },
+  {
+    "id": "RED-L8BLS",
+    "categoria": "Lector de código de barras inalámbrico",
+    "marca": "RedPOS",
+    "modelo": "RED-L8BLS",
+    "caracteristicas": [
+      "Tipo de escaneo: 1D y 2D",
+      "Tecnología de lectura: Imager CMOS",
+      "Velocidad de escaneo: 300 escaneos/seg",
+      "Conectividad: 2,4 GHz USB + Bluetooth",
+      "Batería: 2000 mAh recargable",
+      "Alcance: 25 mts"
+    ],
+    "precio": "S/280",
+    "garantia": "1 año",
+    "pagina_catalogo": 20
+  },
+  {
+    "id": "RED-D68T",
+    "categoria": "Lector de código de barras inalámbrico",
+    "marca": "RedPOS",
+    "modelo": "RED-D68T",
+    "caracteristicas": [
+      "Tipo de escaneo: 1D y 2D",
+      "Conectividad: Base inalámbrica con pantalla visor de código leído y Bluetooth",
+      "Velocidad de escaneo: 300 escaneos/seg",
+      "Alcance: 50 mts"
+    ],
+    "precio": "S/600",
+    "garantia": "1 año",
+    "pagina_catalogo": 21
+  },
+  {
+    "id": "RED-D66T",
+    "categoria": "Lector de código de barras inalámbrico",
+    "marca": "RedPOS",
+    "modelo": "RED-D66T",
+    "caracteristicas": [
+      "Tipo de escaneo: 1D y 2D",
+      "Conectividad: Base inalámbrica y Bluetooth",
+      "Velocidad de escaneo: 300 escaneos/seg",
+      "Batería: 2200 mAh recargable",
+      "Alcance: 50 mts"
+    ],
+    "precio": "S/550",
+    "garantia": "1 año",
+    "pagina_catalogo": 21
+  },
+  {
+    "id": "DS-2278",
+    "categoria": "Lector de código de barras inalámbrico",
+    "marca": "Zebra",
+    "modelo": "DS-2278",
+    "caracteristicas": [
+      "Tipo de escaneo: 1D y 2D",
+      "Conectividad: Base inalámbrica y Bluetooth",
+      "Velocidad de escaneo: 240 escaneos/seg",
+      "Batería: 2400 mAh recargable",
+      "Alcance: 50 mts"
+    ],
+    "precio": "S/950",
+    "garantia": "1 año",
+    "pagina_catalogo": 21
+  },
+  {
+    "id": "RED-U820",
+    "categoria": "Lector de código de barras inalámbrico",
+    "marca": "RedPOS",
+    "modelo": "RED-U820",
+    "caracteristicas": [
+      "Tipo de escaneo: 1D y 2D",
+      "Tecnología de lectura: CMOS",
+      "Conectividad: 2,4 GHz USB + Bluetooth",
+      "Batería: 1200 mAh recargable",
+      "Alcance: 35 mts"
+    ],
+    "precio": "S/350",
+    "garantia": "1 año",
+    "pagina_catalogo": 21
+  },
+  {
+    "id": "RED-335X",
+    "categoria": "Gaveta de dinero",
+    "marca": "RedPOS",
+    "modelo": "RED-335X",
+    "caracteristicas": [
+      "8 compartimentos de monedas",
+      "4 compartimentos de billetes",
+      "Ranura para cheques",
+      "Acero laminado en frío",
+      "Tipo de apertura: Electrónico / Manual",
+      "Medidas (W x D x H): 330 x 350 x 90 mm"
+    ],
+    "precio": "S/160",
+    "garantia": "1 año",
+    "pagina_catalogo": 23
+  },
+  {
+    "id": "RED-410G",
+    "categoria": "Gaveta de dinero",
+    "marca": "RedPOS",
+    "modelo": "RED-410G",
+    "caracteristicas": [
+      "8 compartimentos de monedas regulables",
+      "5 compartimentos de billetes",
+      "Ranura para cheques",
+      "Acero laminado en frío",
+      "Tipo de apertura: Electrónico / Manual",
+      "Medidas (W x D x H): 410 x 415 x 100 mm (con pies de 10 mm)"
+    ],
+    "precio": "S/180",
+    "garantia": "1 año",
+    "pagina_catalogo": 23
+  },
+  {
+    "id": "RED-1501C",
+    "categoria": "Monitor touch screen (no incluye CPU)",
+    "marca": "RedPOS",
+    "modelo": "RED-1501C",
+    "caracteristicas": [
+      "Tamaño de pantalla: 15 pulgadas",
+      "Resolución: 1024 x 768 - 60 Hz",
+      "Tipo de pantalla: Capacitiva multipunto",
+      "Material de fabricación: Carcasa metálica + plástico ABS",
+      "Conectividad: VGA + HDMI + USB (táctil)"
+    ],
+    "precio": "S/820",
+    "garantia": "1 año",
+    "notas": "No incluye CPU.",
+    "pagina_catalogo": 25
+  },
+  {
+    "id": "RED-1701C",
+    "categoria": "Monitor touch screen (no incluye CPU)",
+    "marca": "RedPOS",
+    "modelo": "RED-1701C",
+    "caracteristicas": [
+      "Tamaño de pantalla: 17 pulgadas",
+      "Resolución: 1280 x 1024 - 60 Hz",
+      "Tipo de pantalla: Capacitiva multipunto",
+      "Material de fabricación: Carcasa metálica + plástico ABS",
+      "Conectividad: VGA + HDMI + USB (táctil)"
+    ],
+    "precio": "S/880",
+    "garantia": "1 año",
+    "notas": "No incluye CPU.",
+    "pagina_catalogo": 25
+  },
+  {
+    "id": "TELPO-M1",
+    "categoria": "Punto de venta móvil (portátil)",
+    "marca": "Telpo",
+    "modelo": "TELPO M1",
+    "caracteristicas": [
+      "Procesador: Quad-Core 2.0 GHz",
+      "Capacidad: 3 GB RAM + 32 GB ROM",
+      "Impresora térmica integrada de 58 mm",
+      "Sistema operativo: Android 12",
+      "Batería de 3350 mAh"
+    ],
+    "precio": "S/950",
+    "garantia": "1 año",
+    "pagina_catalogo": 27
+  },
+  {
+    "id": "SWIFT-2-2-GB-RAM-16-GB-ROM",
+    "categoria": "Punto de venta móvil (portátil)",
+    "marca": "imin",
+    "modelo": "SWIFT 2",
+    "variante": "2 GB RAM + 16 GB ROM",
+    "caracteristicas": [
+      "Procesador: Arm Cortex A-73 2.0 GHz",
+      "Capacidad: 2 GB RAM + 16 GB ROM",
+      "Velocidad de impresión: 100 mm/s",
+      "Ancho de papel: 58MM",
+      "Batería: 3350 mAh"
+    ],
+    "precio": "S/990",
+    "garantia": "1 año",
+    "pagina_catalogo": 27
+  },
+  {
+    "id": "SWIFT-2-4-GB-RAM-32-GB-ROM",
+    "categoria": "Punto de venta móvil (portátil)",
+    "marca": "imin",
+    "modelo": "SWIFT 2",
+    "variante": "4 GB RAM + 32 GB ROM",
+    "caracteristicas": [
+      "Procesador: Arm Cortex A-73 2.0 GHz",
+      "Capacidad: 4 GB RAM + 32 GB ROM",
+      "Velocidad de impresión: 100 mm/s",
+      "Ancho de papel: 58MM",
+      "Batería: 3350 mAh"
+    ],
+    "precio": "S/1190",
+    "garantia": "1 año",
+    "pagina_catalogo": 27
+  },
+  {
+    "id": "FALCON-1-2-GB-RAM-16-GB-ROM",
+    "categoria": "All in one punto de venta",
+    "marca": "imin",
+    "modelo": "FALCON 1",
+    "variante": "2 GB RAM + 16 GB ROM",
+    "caracteristicas": [
+      "Procesador: Octa-Core, A75 2.0GHz",
+      "Capacidad: 2GB RAM + 16GB ROM",
+      "Velocidad de impresión: 250 mm/s",
+      "Pantalla 10.1\" - Android 11",
+      "Ancho de papel: 80MM"
+    ],
+    "precio": "S/1680",
+    "garantia": "1 año",
+    "pagina_catalogo": 29
+  },
+  {
+    "id": "FALCON-1-4-GB-RAM-32-GB-ROM-NFC",
+    "categoria": "All in one punto de venta",
+    "marca": "imin",
+    "modelo": "FALCON 1",
+    "variante": "4 GB RAM + 32 GB ROM (NFC)",
+    "caracteristicas": [
+      "Procesador: Octa-Core, A75 2.0GHz",
+      "Capacidad: 4 GB RAM + 32 GB ROM (NFC)",
+      "Velocidad de impresión: 250 mm/s",
+      "Pantalla 10.1\" - Android 11",
+      "Ancho de papel: 80MM"
+    ],
+    "precio": "S/2100",
+    "garantia": "1 año",
+    "pagina_catalogo": 29
+  },
+  {
+    "id": "D4-504",
+    "categoria": "All in one punto de venta",
+    "marca": "imin",
+    "modelo": "D4-504",
+    "caracteristicas": [
+      "Procesador: QuadCore 2.00Gh",
+      "Capacidad: 2 GB RAM + 16 GB ROM",
+      "Velocidad de impresión: 250 mm/s",
+      "Pantalla 15.6 - Pantalla secundaria: 10.1",
+      "Sistema operativo: Android 11",
+      "Ancho de papel: 80MM"
+    ],
+    "precio": "S/1980",
+    "garantia": "1 año",
+    "pagina_catalogo": 29
+  },
+  {
+    "id": "C20PRO",
+    "categoria": "All in one punto de venta",
+    "marca": "Landi",
+    "modelo": "C20PRO",
+    "caracteristicas": [
+      "Procesador: Octa core 2.40Ghz",
+      "Capacidad: 4 GB RAM + 64 GB ROM",
+      "Pantalla: 15.6\" - Pantalla secundaria: 10.1\"",
+      "Sistema operativo: Android 13",
+      "Ancho de papel: 80MM"
+    ],
+    "precio": "S/3200",
+    "garantia": "1 año",
+    "pagina_catalogo": 30
+  },
+  {
+    "id": "SWAN-2-PANTALLA-DE-15-1-SIN-PANTALLA-SECUNDARIA",
+    "categoria": "All in one punto de venta",
+    "marca": "imin",
+    "modelo": "SWAN 2",
+    "variante": "pantalla de 15.1\" (sin pantalla secundaria)",
+    "caracteristicas": [
+      "Procesador: Octa core A55 2.0GHz",
+      "Capacidad: 4 GB RAM + 64 GB ROM",
+      "Velocidad de impresión: 250 mm/s",
+      "Pantalla 15.1\" - Android 13",
+      "Ancho de papel: 80MM"
+    ],
+    "precio": "S/2350",
+    "garantia": "1 año",
+    "pagina_catalogo": 30
+  },
+  {
+    "id": "SWAN-2-CON-PANTALLA-SECUNDARIA-DE-10-1",
+    "categoria": "All in one punto de venta",
+    "marca": "imin",
+    "modelo": "SWAN 2",
+    "variante": "con pantalla secundaria de 10.1\"",
+    "caracteristicas": [
+      "Procesador: Octa core A55 2.0GHz",
+      "Capacidad: 4 GB RAM + 64 GB ROM",
+      "Velocidad de impresión: 250 mm/s",
+      "Pantalla: 15.1\" - Pantalla secundaria: 10.1\"",
+      "Sistema operativo: Android 13",
+      "Ancho de papel: 80MM"
+    ],
+    "precio": "S/2650",
+    "garantia": "1 año",
+    "pagina_catalogo": 30
+  },
+  {
+    "id": "RED-P1519",
+    "categoria": "All in one punto de venta",
+    "marca": "RedPOS",
+    "modelo": "RED-P1519",
+    "caracteristicas": [
+      "Procesador: Core i5 - 6th",
+      "Memoria RAM: 8 GB",
+      "Resolución: 1024 x 768 - 15\"",
+      "Almacenamiento de disco SSD 256GB",
+      "Pantalla de 15\" resistente a salpicaduras"
+    ],
+    "precio": "S/2750",
+    "garantia": "1 año",
+    "pagina_catalogo": 31
+  },
+  {
+    "id": "RED-P1519-PLUS",
+    "categoria": "All in one punto de venta",
+    "marca": "RedPOS",
+    "modelo": "RED-P1519 PLUS",
+    "caracteristicas": [
+      "Procesador: Core i5 - 6th",
+      "Memoria RAM: 16 GB",
+      "Resolución: 1024 x 768 - 15\"",
+      "Almacenamiento de disco SSD 512GB",
+      "Pantalla de 15\" resistente a salpicaduras"
+    ],
+    "precio": "S/2950",
+    "garantia": "1 año",
+    "pagina_catalogo": 31
+  },
+  {
+    "id": "RED-P1513",
+    "categoria": "All in one punto de venta",
+    "marca": "RedPOS",
+    "modelo": "RED-P1513",
+    "caracteristicas": [
+      "Procesador: Intel Core i7 10th",
+      "Memoria: 16 GB RAM + 512 GB ROM",
+      "Pantalla: 15 pulgadas",
+      "Sistema operativo: Windows 11"
+    ],
+    "precio": "S/3180",
+    "garantia": "1 año",
+    "pagina_catalogo": 31
+  },
+  {
+    "id": "RED-T451B",
+    "categoria": "Impresoras de etiquetas a transferencia térmica (T.T/T.D)",
+    "marca": "RedPOS",
+    "modelo": "RED-T451B",
+    "caracteristicas": [
+      "Ancho de impresión: 4 pulgadas",
+      "Velocidad de impresión: 127 mm/s",
+      "Resolución: 203 DPI",
+      "Vida útil del cabezal: 120KM",
+      "Conectividad: USB"
+    ],
+    "precio": "S/720",
+    "garantia": "1 año",
+    "pagina_catalogo": 33
+  },
+  {
+    "id": "RED-T4201",
+    "categoria": "Impresoras de etiquetas a transferencia térmica (T.T/T.D)",
+    "marca": "RedPOS",
+    "modelo": "RED-T4201",
+    "caracteristicas": [
+      "Ancho de impresión: 4 pulgadas",
+      "Velocidad de impresión: 152 mm/s",
+      "Resolución: 203 DPI",
+      "Vida útil del cabezal: 100KM",
+      "Conectividad: USB + Ethernet"
+    ],
+    "precio": "S/890",
+    "garantia": "1 año",
+    "pagina_catalogo": 33
+  },
+  {
+    "id": "RED-T4202",
+    "categoria": "Impresoras de etiquetas a transferencia térmica (T.T/T.D)",
+    "marca": "RedPOS",
+    "modelo": "RED-T4202",
+    "caracteristicas": [
+      "Ancho de impresión: 4 pulgadas",
+      "Corte automático",
+      "Imprime nylon textil para lavado",
+      "Velocidad de impresión: 152 mm/s",
+      "Conectividad: USB + Bluetooth"
+    ],
+    "precio": "S/1290",
+    "garantia": "1 año",
+    "pagina_catalogo": 34
+  },
+  {
+    "id": "ZD230-USB",
+    "categoria": "Impresoras de etiquetas a transferencia térmica (T.T/T.D)",
+    "marca": "Zebra",
+    "modelo": "ZD230",
+    "variante": "USB",
+    "caracteristicas": [
+      "Ancho de impresión: 4 pulgadas",
+      "Velocidad de impresión: 152 mm/s",
+      "Vida útil del cabezal: 120KM",
+      "Conectividad: USB"
+    ],
+    "precio": "S/1300",
+    "garantia": "1 año",
+    "pagina_catalogo": 34
+  },
+  {
+    "id": "ZD230-USB-LAN",
+    "categoria": "Impresoras de etiquetas a transferencia térmica (T.T/T.D)",
+    "marca": "Zebra",
+    "modelo": "ZD230",
+    "variante": "USB + LAN",
+    "caracteristicas": [
+      "Ancho de impresión: 4 pulgadas",
+      "Velocidad de impresión: 152 mm/s",
+      "Vida útil del cabezal: 120KM",
+      "Conectividad: USB + LAN"
+    ],
+    "precio": "S/1400",
+    "garantia": "1 año",
+    "pagina_catalogo": 34
+  },
+  {
+    "id": "RED-365B",
+    "categoria": "Impresoras de etiquetas térmico directo",
+    "marca": "RedPOS",
+    "modelo": "RED-365B",
+    "tipo": "Impresora dual",
+    "caracteristicas": [
+      "Ancho de impresión: 3 pulgadas",
+      "Velocidad de impresión: Etiquetas 127 mm/s / Recibos 220 mm/s",
+      "Vida útil del cabezal: 100KM",
+      "Conectividad: USB / Bluetooth"
+    ],
+    "precio": "S/350",
+    "garantia": "1 año",
+    "pagina_catalogo": 36
+  },
+  {
+    "id": "RED-410B",
+    "categoria": "Impresoras de etiquetas térmico directo",
+    "marca": "RedPOS",
+    "modelo": "RED-410B",
+    "caracteristicas": [
+      "Ancho de impresión: 4 pulgadas",
+      "Velocidad de impresión: 152 mm/s",
+      "Resolución: 203 DPI",
+      "Vida útil del cabezal: 120KM",
+      "Conectividad: USB + Bluetooth"
+    ],
+    "precio": "S/450",
+    "garantia": "1 año",
+    "pagina_catalogo": 36
+  },
+  {
+    "id": "RED-RL80",
+    "categoria": "Impresoras de etiquetas térmico directo",
+    "marca": "RedPOS",
+    "modelo": "RED-RL80",
+    "tipo": "Impresora dual",
+    "caracteristicas": [
+      "Ancho de impresión: 3 pulgadas",
+      "Velocidad de impresión: 150 mm/s",
+      "Vida útil del cabezal de impresión: 150 km",
+      "Conectividad: USB + Bluetooth",
+      "Resolución de impresión: 640 dots/line"
+    ],
+    "precio": "S/320",
+    "garantia": "1 año",
+    "pagina_catalogo": 36
+  },
+  {
+    "id": "RED-237B",
+    "categoria": "Impresoras de etiquetas térmico directo",
+    "marca": "RedPOS",
+    "modelo": "RED-237B",
+    "caracteristicas": [
+      "Ancho de impresión: 2 pulgadas",
+      "Velocidad de impresión: 101 mm/s",
+      "Resolución: 203 DPI",
+      "Vida útil del cabezal: 50KM",
+      "Conectividad: USB + Bluetooth"
+    ],
+    "precio": "S/299",
+    "garantia": "1 año",
+    "pagina_catalogo": 37
+  },
+  {
+    "id": "RED-480BL",
+    "categoria": "Impresoras de etiquetas térmico directo",
+    "marca": "RedPOS",
+    "modelo": "RED-480BL",
+    "tipo": "Impresora dual",
+    "caracteristicas": [
+      "Ancho de impresión: 4 pulgadas",
+      "Velocidad de impresión: 152 mm/s",
+      "Resolución: 203 DPI",
+      "Vida útil del cabezal: 120KM",
+      "Conectividad: USB + Bluetooth + Ethernet"
+    ],
+    "precio": "S/500",
+    "garantia": "1 año",
+    "pagina_catalogo": 37
+  },
+  {
+    "id": "RED-HL80B",
+    "categoria": "Impresoras de etiquetas térmico directo",
+    "marca": "RedPOS",
+    "modelo": "RED-HL80B",
+    "tipo": "Impresora dual",
+    "caracteristicas": [
+      "Ancho de impresión: 3 pulgadas",
+      "Velocidad de impresión: 127 mm/s",
+      "Resolución: 203 DPI",
+      "Vida útil del cabezal: 110KM",
+      "Conectividad: USB + Bluetooth",
+      "Dimensiones: 225 x 151 x 151 mm"
+    ],
+    "precio": "S/350",
+    "garantia": "1 año",
+    "pagina_catalogo": 37
+  },
+  {
+    "id": "RM-C16",
+    "categoria": "Accesorios",
+    "marca": "Remax",
+    "modelo": "RM-C16",
+    "tipo": "Soporte para tablet",
+    "caracteristicas": [
+      "Material: PVC",
+      "Soporta tablet: 7\" - 11\"",
+      "Rotación 360°",
+      "Medidas: 176x205x140mm"
+    ],
+    "precio": "S/25",
+    "garantia": "1 año",
+    "pagina_catalogo": 39
+  },
+  {
+    "id": "HOLDER-DE-ETIQUETAS",
+    "categoria": "Accesorios",
+    "marca": "RedPOS",
+    "modelo": "HOLDER DE ETIQUETAS",
+    "caracteristicas": [
+      "Diámetro máximo del rollo: 8 pulgadas",
+      "Núcleo mínimo: 1.18 pulgadas",
+      "Compatible con etiquetas en rollo y plegadas",
+      "Funcionamiento manual y soporte ajustable"
+    ],
+    "precio": "S/60",
+    "garantia": "1 año",
+    "pagina_catalogo": 39
+  },
+  {
+    "id": "TH-011",
+    "categoria": "Accesorios",
+    "marca": "RedPOS",
+    "modelo": "TH-011",
+    "tipo": "Soporte para tablet",
+    "caracteristicas": [
+      "Material: Aluminio",
+      "Soporta tablet: 7\" - 11\"",
+      "Rotación 360°",
+      "Medidas: 176x205x140mm"
+    ],
+    "precio": "S/50",
+    "garantia": "1 año",
+    "pagina_catalogo": 39
+  },
+  {
+    "id": "HOLDER-R330H",
+    "categoria": "Accesorios",
+    "marca": "RedPOS",
+    "modelo": "HOLDER-R330H",
+    "tipo": "Soporte para tablet",
+    "caracteristicas": [
+      "Material: Metal",
+      "Soporta tablet: 7\" - 13\"",
+      "Rotación 360°",
+      "Medidas: 176x205x140mm"
+    ],
+    "precio": "S/160",
+    "garantia": "1 año",
+    "pagina_catalogo": 39
+  },
+  {
+    "id": "RED-840E",
+    "categoria": "Contador y detector de billetes",
+    "marca": "RedPOS",
+    "modelo": "RED-840E",
+    "caracteristicas": [
+      "Capacidad de tolva / apilador: 200/400 billetes",
+      "Velocidad de conteo: hasta 1,200 billetes/min",
+      "Valorización: automática por denominación y total",
+      "Detección básica de billetes falsos"
+    ],
+    "precio": "S/1200",
+    "garantia": "1 año",
+    "pagina_catalogo": 41
+  },
+  {
+    "id": "RED-920A",
+    "categoria": "Contador y detector de billetes",
+    "marca": "RedPOS",
+    "modelo": "RED-920A",
+    "caracteristicas": [
+      "Capacidad de tolva / apilador: 200/400 billetes",
+      "Velocidad de conteo: hasta 1,200 billetes/min",
+      "Valorización: automática por denominación y total",
+      "Detección avanzada de billetes falsos (UV, IR, magnética e imagen)"
+    ],
+    "precio": "S/2500",
+    "garantia": "1 año",
+    "notas": "El catálogo indica: «Nuestros equipos RED-920 y RED-950A incluyen un mantenimiento gratuito durante el primer año».",
+    "pagina_catalogo": 41
+  },
+  {
+    "id": "RED-950A",
+    "categoria": "Contador y detector de billetes",
+    "marca": "RedPOS",
+    "modelo": "RED-950A",
+    "caracteristicas": [
+      "Capacidad de tolva / apilador: 200/500 billetes",
+      "Capacidad de bandeja de rechazo: 50 billetes",
+      "Velocidad de conteo: hasta 1,200 billetes/min",
+      "Valorización: automática por denominación y total",
+      "Detección avanzada de billetes falsos (UV, IR, magnética e imagen)"
+    ],
+    "precio": "S/3800",
+    "garantia": "1 año",
+    "notas": "El catálogo indica: «Nuestros equipos RED-920 y RED-950A incluyen un mantenimiento gratuito durante el primer año».",
+    "pagina_catalogo": 41
+  },
+  {
+    "id": "K-20-PRO",
+    "categoria": "Marcadores de control de asistencia",
+    "marca": "ZKTeco",
+    "modelo": "K-20 PRO",
+    "caracteristicas": [
+      "Capacidad de huellas: 3000",
+      "Capacidad para tarjetas: 3000 (estándar)",
+      "Capacidad de eventos: 200,000",
+      "Conexión: TCP/IP, USB-Host",
+      "Contiene batería de respaldo"
+    ],
+    "precio": "S/420",
+    "garantia": "1 año",
+    "pagina_catalogo": 43
+  },
+  {
+    "id": "SENSEFP-M1",
+    "categoria": "Marcadores de control de asistencia",
+    "marca": "ZKTeco",
+    "modelo": "SENSEFP M1",
+    "caracteristicas": [
+      "Capacidad de huellas: 500",
+      "Capacidad para tarjetas: 500 (estándar)",
+      "Conexión: TCP/IP, WIFI",
+      "Integración con ZKBio Zlink"
+    ],
+    "precio": "S/390",
+    "garantia": "1 año",
+    "pagina_catalogo": 43
+  },
+  {
+    "id": "SENSEFACE-M2F-LR",
+    "categoria": "Marcadores de control de asistencia",
+    "marca": "ZKTeco",
+    "modelo": "SENSEFACE M2F-LR",
+    "caracteristicas": [
+      "Capacidad de huellas: 1000",
+      "Capacidad de rostros: 500",
+      "Capacidad para tarjetas: 1000 (estándar)",
+      "Conexión: TCP/IP, WIFI",
+      "Integración con ZKBio Zlink"
+    ],
+    "precio": "S/450",
+    "garantia": "1 año",
+    "pagina_catalogo": 43
+  },
+  {
+    "id": "TARJETA-DE-PROXIMIDAD-GRUESA",
+    "categoria": "Marcadores de control de asistencia",
+    "marca": "ZKTeco",
+    "modelo": "TARJETA DE PROXIMIDAD GRUESA",
+    "caracteristicas": [
+      "Tarjeta de proximidad gruesa",
+      "Material: PVC",
+      "Hz: 125KHz",
+      "Dimensiones: 85.6 x 54 x 0.76 mm",
+      "Color: Blanco",
+      "Código impreso"
+    ],
+    "precios": {
+      "unidad": "S/2.80",
+      "caja de 100": "S/200"
+    },
+    "garantia": "1 año",
+    "pagina_catalogo": 44
+  },
+  {
+    "id": "TARJETA-DE-PROXIMIDAD-DELGADA",
+    "categoria": "Marcadores de control de asistencia",
+    "marca": "ZKTeco",
+    "modelo": "TARJETA DE PROXIMIDAD DELGADA",
+    "caracteristicas": [
+      "Tarjeta de proximidad delgada",
+      "Material: PVC",
+      "Hz: 125KHz",
+      "Dimensiones: 85.6 x 54 x 0.76 mm",
+      "Color: Blanco",
+      "Código impreso"
+    ],
+    "precios": {
+      "unidad": "S/2.50",
+      "caja de 200": "S/360"
+    },
+    "garantia": "1 año",
+    "pagina_catalogo": 44
+  }
+]

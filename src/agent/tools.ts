@@ -56,9 +56,15 @@ export function buildTools(ctx: ToolContext): ToolDef[] {
       description:
         "Busca productos o servicios en el catálogo oficial de la empresa. Úsala antes de afirmar algo sobre " +
         "productos, precios o características. Devuelve solo lo que existe en el catálogo.",
-      schema: z.object({ query: z.string().min(2).describe("Palabras clave de lo que busca el cliente") }),
-      run: ({ query }) => {
-        const items = searchCatalog(knowledge.catalog, query);
+      schema: z.object({
+        query: z.string().min(2).describe("Modelo (p. ej. RED-E803B) o palabras clave (p. ej. lector inalámbrico 2D)"),
+        max_resultados: z.number().int().min(1).max(15).optional().describe("Por defecto 6"),
+      }),
+      run: ({ query, max_resultados }) => {
+        const items = searchCatalog(knowledge.catalog, query, max_resultados ?? 6).map((item) => {
+          const { pagina_catalogo: _page, ...rest } = item;
+          return rest;
+        });
         return items.length
           ? JSON.stringify(items)
           : "Sin resultados en el catálogo. No inventes: ofrece confirmarlo con un asesor.";

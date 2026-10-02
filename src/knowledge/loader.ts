@@ -76,25 +76,70 @@ export function assertKnowledgeReady(k: Knowledge, nodeEnv: string): void {
   }
 }
 
+const STOPWORDS = new Set([
+  "para", "con", "sin", "que", "una", "uno", "unos", "unas", "los", "las", "del", "por", "mas", "como",
+  "quiero", "necesito", "busco", "tienen", "tiene", "hay", "red", "soluciones",
+]);
+
 const normalize = (s: string): string =>
   s
     .toLowerCase()
     .normalize("NFD")
-    .replace(/[̀-ͯ]/g, "");
+    .replace(/[\u0300-\u036f]/g, "")
+    // "80 mm" y "80mm" deben coincidir
+    .replace(/(\d)\s+(mm|km|gb|mah|dpi|ghz|hz|nm|mts)\b/g, "$1$2");
 
-/** Búsqueda simple por palabras (sin tildes ni mayúsculas); suficiente para catálogos pequeños. */
-export function searchCatalog(catalog: CatalogItem[], query: string, limit = 5): CatalogItem[] {
+const compact = (s: string): string => normalize(s).replace(/[^a-z0-9]/g, "");
+
+const str = (v: unknown): string => (typeof v === "string" ? v : "");
+
+/**
+ * Búsqueda simple por palabras (sin tildes, mayúsculas ni plurales) más coincidencia directa por modelo
+ * ("e803b", "swift 2"); suficiente para catálogos de cientos de productos.
+ */
+export function searchCatalog(catalog: CatalogItem[], query: string, limit = 6): CatalogItem[] {
   const tokens = normalize(query)
     .split(/[^a-z0-9]+/)
-    .filter((t) => t.length >= 3);
-  if (tokens.length === 0) return [];
+    .filter((t) => t.length >= 3 && !STOPWORDS.has(t))
+    .map((t) => (t.length >= 5 && t.endsWith("s") ? t.slice(0, -1) : t));
+  const q = compact(query);
+
   return catalog
     .map((item) => {
       const text = normalize(JSON.stringify(item));
-      return { item, score: tokens.filter((t) => text.includes(t)).length };
+      let score = tokens.filter((t) => text.includes(t)).length;
+      if (q.length >= 4) {
+        const model = compact(`${str(item.id)} ${str(item.modelo)} ${str(item.variante)}`);
+        if (model.includes(q)) score += 10;
+      }
+      return { item, score };
     })
     .filter((x) => x.score > 0)
     .sort((a, b) => b.score - a.score)
     .slice(0, limit)
     .map((x) => x.item);
+}
+
+/** Texto de precio de un producto: `precio` o `precios` (p. ej. unidad y caja). */
+export function priceText(item: CatalogItem): string {
+  if (typeof item.precio === "string") return item.precio;
+  if (item.precios && typeof item.precios === "object") {
+    return Object.entries(item.precios as Record<string, unknown>)
+      .map(([k, v]) => `${k} ${String(v)}`)
+      .join(", ");
+  }
+  return "precio por confirmar";
+}
+
+/** Índice compacto agrupado por categoría: modelo, marca y precio (sin especificaciones). */
+export function catalogIndex(catalog: CatalogItem[]): string {
+  const groups = new Map<string, string[]>();
+  for (const item of catalog) {
+    const cat = str(item.categoria) || "Otros";
+    const name = [str(item.marca), str(item.modelo)].filter(Boolean).join(" ");
+    const variant = str(item.variante) ? ` (${str(item.variante)})` : "";
+    const line = `- ${name}${variant}: ${priceText(item)}`;
+    (groups.get(cat) ?? groups.set(cat, []).get(cat)!).push(line);
+  }
+  return [...groups].map(([cat, lines]) => `## ${cat}\n${lines.join("\n")}`).join("\n\n");
 }

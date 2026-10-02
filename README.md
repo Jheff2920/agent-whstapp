@@ -59,16 +59,20 @@ Una Raspberry Pi no puede correr el modelo local con soltura: allí usa `anthrop
 ### Conocimiento del negocio (`knowledge/`)
 
 El agente **solo afirma lo que esté en estos archivos**; no inventa productos, precios ni reseñas.
-Los archivos del repo son plantillas vacías marcadas `TODO`:
+| Archivo | Contenido | Estado |
+|---|---|---|
+| `catalog.json` | 82 productos del **Catálogo Red Soluciones 2026** (16 categorías): marca, modelo, características, precio en soles, garantía y página del PDF | ✅ cargado |
+| `empresa.md` | Qué ofrece, garantía, ubicación y contacto (tomados del catálogo); horario, pagos/envíos/IGV, tono de marca y preguntas frecuentes | ⏳ partes `TODO` |
+| `resenas.md` | Reseñas reales de clientes (se citan textualmente) | ⏳ `TODO` |
 
-| Archivo | Contenido |
-|---|---|
-| `empresa.md` | Qué ofrece Red Soluciones, políticas, ubicación y horario, tono de marca, preguntas frecuentes |
-| `catalog.json` | Lista de productos/servicios (objetos libres: nombre, descripción, precio…) |
-| `resenas.md` | Reseñas reales de clientes (se citan textualmente) |
+Se recargan solos al editarlos. Las secciones con `TODO` no se muestran al modelo: se reemplazan por un aviso para que
+derive a una persona en lugar de inventar. Con `NODE_ENV=production` el servicio **se niega a arrancar** mientras
+quede algún `TODO`. Los tests usan datos ficticios en `tests/fixtures/`.
 
-Se recargan solos al editarlos. Mientras haya `TODO`, el agente deriva todo a una persona, y con `NODE_ENV=production`
-el servicio **se niega a arrancar** hasta completarlos. Los tests usan datos ficticios en `tests/fixtures/`.
+El catálogo completo no cabe en el prompt, así que el modelo recibe un **índice** (modelo, marca y precio, ≈2 000 tokens
+en total) y consulta las especificaciones con la herramienta `search_catalog` (por modelo o palabras clave).
+Cada producto se transcribió tal como figura en el PDF; los modelos repetidos con distinta configuración
+(SWIFT 2, FALCON 1, SWAN 2, ZD230) se distinguen por `variante`.
 
 ## Variables de entorno
 
