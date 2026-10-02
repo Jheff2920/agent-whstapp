@@ -63,7 +63,7 @@ El agente **solo afirma lo que esté en estos archivos**; no inventa productos, 
 |---|---|---|
 | `catalog.json` | 82 productos del **Catálogo Red Soluciones 2026** (16 categorías): marca, modelo, características, precio en soles, garantía y página del PDF | ✅ cargado |
 | `sedes.yml` | Las dos sedes (Cyberplaza y San Isidro): dirección y horario por día, hora de Lima | ✅ cargado |
-| `empresa.md` | Qué ofrece, precios con IGV, garantía y devoluciones, contacto | ⏳ faltan formas de pago, envíos/ventas online y comprobantes (`TODO`) |
+| `empresa.md` | Qué ofrece, precios con IGV, garantía y devoluciones, envíos nacionales, boleta/factura, contacto | ⏳ falta solo **formas de pago** (`TODO`); envíos y comprobantes ya cargados |
 | `resenas.md` | Reseñas reales de clientes, citadas textualmente | opcional: **no existe**; sin él el agente no menciona opiniones de clientes |
 
 Se recargan solos al editarlos. Las secciones con `TODO` no se muestran al modelo: se reemplazan por un aviso para que

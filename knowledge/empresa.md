@@ -29,8 +29,9 @@ Todos los precios incluyen IGV.
 ## Formas de pago
 TODO
 
-## Envíos y ventas online (cobertura, costos y plazos)
-TODO
+## Envíos y ventas online
+- Se hacen envíos a nivel nacional a través de diversas empresas de transporte; la empresa depende de lo que prefiera el cliente.
+- Para saber si es posible enviar con la empresa de transporte que el cliente elija (y para costos y plazos de envío) hay que consultar con un asesor: usa handoff_to_human y dile al cliente que un asesor lo confirmará.
 
-## Comprobantes (boleta y factura)
-TODO
+## Comprobantes
+Todas las ventas se emiten con boleta o factura.

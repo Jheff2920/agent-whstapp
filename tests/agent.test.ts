@@ -156,6 +156,8 @@ describe("prompt con el conocimiento real", () => {
     expect(stable).toContain("lunes a viernes 09:00-18:00; sábado 09:00-13:00; domingo cerrado");
     expect(stable).toContain("Todos los precios incluyen IGV");
     expect(stable).toContain("No hay devolución por mal uso");
+    expect(stable).toContain("envíos a nivel nacional a través de diversas empresas de transporte");
+    expect(stable).toContain("boleta o factura");
     expect(stable).not.toContain("# RESEÑAS DE CLIENTES");
     expect(stable).toContain("tutea al cliente y no uses emojis");
     expect(stable).toContain("no puedes agendar citas");
