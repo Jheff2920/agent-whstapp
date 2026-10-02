@@ -1,11 +1,20 @@
 import type { Logger } from "pino";
 import type { OutboxRow, Repo } from "./db/repos.js";
 
+/** Plantilla aprobada por Meta; `params` son las variables {{1}}, {{2}}… del cuerpo, en orden. */
+export interface WaTemplate {
+  name: string;
+  lang: string;
+  params: string[];
+}
+
 export interface SendRequest {
   outboxId: number;
   messageId: number;
   to: string;
   text: string;
+  /** Si viene, se envía esta plantilla (permitida fuera de la ventana de 24 h) en lugar del texto. */
+  template?: WaTemplate;
 }
 
 /** Fallo que no se arregla reintentando (mensaje rechazado, token inválido, fuera de la ventana de 24 h…). */
@@ -71,7 +80,7 @@ export class Outbox {
     this.onChange = opts.onChange;
   }
 
-  enqueue(o: { conversationId: number; toWaId: string; body: string; author: "bot" | "humano" }) {
+  enqueue(o: { conversationId: number; toWaId: string; body: string; author: "bot" | "humano"; template?: WaTemplate }) {
     const queued = this.repo.enqueueOutbound(o);
     void this.flush();
     return queued;
@@ -107,7 +116,8 @@ export class Outbox {
   }
 
   private async deliver(row: OutboxRow): Promise<void> {
-    if (!this.repo.windowOpenForMessage(row.message_id, this.now())) {
+    const template = row.template ? (JSON.parse(row.template) as WaTemplate) : undefined;
+    if (!template && !this.repo.windowOpenForMessage(row.message_id, this.now())) {
       this.repo.markOutboxFailed(row, "fuera de la ventana de 24 h de WhatsApp: requiere plantilla aprobada");
       this.log.warn({ outboxId: row.id }, "mensaje fuera de la ventana de 24 h");
       this.onChange?.(row.message_id);
@@ -119,6 +129,7 @@ export class Outbox {
         messageId: row.message_id,
         to: row.to_wa_id,
         text: row.body,
+        template,
       });
       this.repo.markOutboxSent(row, waMessageId ?? null);
       this.onChange?.(row.message_id);

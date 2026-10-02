@@ -37,6 +37,7 @@ export interface Detail {
     optedOut: boolean;
     createdAt: string;
     facts: { key: string; value: string }[];
+    appointments: { id: number; text: string; contactName: string }[];
   };
   messages: Message[];
 }
@@ -50,6 +51,41 @@ export interface Status {
   outbox: { pending: number; failed: number };
   conversations: { escalado: number; humano: number; unread: number };
   timezone: string;
+  appointmentsEnabled: boolean;
+}
+
+export type ApptStatus = "confirmada" | "cancelada" | "completada" | "no_asistio";
+
+export interface Appointment {
+  id: number;
+  sede: string;
+  date: string;
+  time: string;
+  endTime: string;
+  startsAt: string;
+  contactName: string;
+  purpose: string | null;
+  status: ApptStatus;
+  source: "bot" | "panel";
+  google: { sync: "pendiente" | "ok" | "error" | "no_aplica"; error: string | null };
+  customer: { id: number; name: string | null; waId: string };
+  conversationId: number | null;
+}
+
+export interface AgendaData {
+  from: string;
+  to: string;
+  sedes: { id: string; nombre: string; googleCalendar: boolean }[];
+  appointments: Appointment[];
+}
+
+export interface NewAppointment {
+  phone: string;
+  sede: string;
+  fecha: string;
+  hora: string;
+  nombre: string;
+  motivo?: string;
 }
 
 export const STAGES = [

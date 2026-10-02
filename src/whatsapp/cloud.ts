@@ -36,8 +36,18 @@ export class CloudApiSender implements Sender {
           messaging_product: "whatsapp",
           recipient_type: "individual",
           to: req.to,
-          type: "text",
-          text: { preview_url: false, body: req.text },
+          ...(req.template
+            ? {
+                type: "template",
+                template: {
+                  name: req.template.name,
+                  language: { code: req.template.lang },
+                  components: req.template.params.length
+                    ? [{ type: "body", parameters: req.template.params.map((text) => ({ type: "text", text })) }]
+                    : [],
+                },
+              }
+            : { type: "text", text: { preview_url: false, body: req.text } }),
         }),
         signal: AbortSignal.timeout(20_000),
       });

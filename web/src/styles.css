@@ -587,8 +587,14 @@ label {
   .hide-sm {
     display: none;
   }
-  .chip:not(.danger) {
+  .chips .chip:not(.danger) {
     display: none;
+  }
+  .brand strong {
+    display: none;
+  }
+  .topbar {
+    flex-wrap: wrap;
   }
   .topbar {
     padding: 8px 12px;
@@ -617,4 +623,114 @@ label {
   .bubble {
     max-width: 90%;
   }
+}
+
+/* ---------- pestañas y agenda ---------- */
+.tabs {
+  display: flex;
+  gap: 4px;
+}
+.tab {
+  border-color: transparent;
+  background: transparent;
+  color: var(--muted);
+  font-weight: 600;
+}
+.tab.on {
+  background: var(--accent-soft);
+  color: var(--accent);
+}
+.agenda {
+  grid-column: 1 / -1;
+  overflow: auto;
+  padding: 16px;
+  max-width: 980px;
+  width: 100%;
+  margin: 0 auto;
+}
+.agenda-bar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 12px;
+}
+.agenda-bar h2 {
+  margin: 0 8px 0 0;
+  font-size: 18px;
+  flex: 1 1 200px;
+}
+.agenda-bar select {
+  width: auto;
+}
+.agenda-day {
+  margin-top: 16px;
+}
+.agenda-day h3 {
+  margin: 0 0 6px;
+  font-size: 14px;
+  color: var(--muted);
+}
+.agenda-day h3::first-letter {
+  text-transform: uppercase;
+}
+.appt {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 10px 12px;
+  margin-bottom: 8px;
+  box-shadow: var(--shadow);
+  display: grid;
+  gap: 6px;
+}
+.appt.off {
+  opacity: 0.6;
+}
+.appt-main {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 4px 12px;
+}
+.appt-time {
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+}
+.appt-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+.appt-actions button {
+  padding: 4px 10px;
+  font-size: 13px;
+}
+.appt-form {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 12px;
+  margin-bottom: 12px;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 8px 12px;
+  align-items: end;
+}
+.appt-form label {
+  margin: 0;
+}
+.appt-form .span-all {
+  grid-column: 1 / -1;
+  display: flex;
+  gap: 8px;
+  justify-content: flex-end;
+}
+.chip.ok {
+  background: var(--human-bg);
+  color: var(--text);
+  border-color: transparent;
+}
+.agenda .banner {
+  margin-bottom: 12px;
 }

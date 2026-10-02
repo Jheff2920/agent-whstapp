@@ -44,6 +44,8 @@ export interface OutboxRow {
   next_attempt_at: string;
   last_error: string | null;
   created_at: string;
+  /** JSON de WaTemplate cuando es una plantilla aprobada (permitida fuera de la ventana de 24 h). */
+  template: string | null;
 }
 
 export type AppointmentStatus = "confirmada" | "cancelada" | "completada" | "no_asistio";
@@ -247,6 +249,8 @@ export class Repo {
     toWaId: string;
     body: string;
     author: "bot" | "humano";
+    /** Plantilla de WhatsApp (se envía esta en lugar del texto libre; `body` es lo que ve el panel). */
+    template?: object;
   }): { message: Message; outboxId: number } {
     return this.db.transaction(() => {
       const message = this.addMessage({
@@ -259,10 +263,10 @@ export class Repo {
       const ts = now();
       const info = this.db
         .prepare(
-          `INSERT INTO outbox (message_id, to_wa_id, body, next_attempt_at, created_at)
-           VALUES (?, ?, ?, ?, ?)`,
+          `INSERT INTO outbox (message_id, to_wa_id, body, next_attempt_at, created_at, template)
+           VALUES (?, ?, ?, ?, ?, ?)`,
         )
-        .run(message.id, o.toWaId, o.body, ts, ts);
+        .run(message.id, o.toWaId, o.body, ts, ts, o.template ? JSON.stringify(o.template) : null);
       return { message, outboxId: Number(info.lastInsertRowid) };
     })();
   }
@@ -504,6 +508,16 @@ export class Repo {
     }
     if (!sets.length) return;
     this.db.prepare(`UPDATE appointments SET ${sets.join(", ")}, updated_at = ? WHERE id = ?`).run(...args, now(), id);
+  }
+
+  /** Citas confirmadas sin recordatorio que empiezan entre `fromIso` y `toIso`. */
+  appointmentsForReminder(fromIso: string, toIso: string): AppointmentRow[] {
+    return this.db
+      .prepare(
+        `SELECT * FROM appointments WHERE status = 'confirmada' AND reminder_sent_at IS NULL
+           AND starts_at > ? AND starts_at <= ? ORDER BY starts_at`,
+      )
+      .all(fromIso, toIso) as AppointmentRow[];
   }
 
   /** Citas que aún deben sincronizarse con Google (nuevas, con error o canceladas con evento por borrar). */

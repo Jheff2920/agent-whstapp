@@ -1,6 +1,18 @@
 import type { Status } from "../types";
 
-export function TopBar({ status, onLogout }: { status: Status | null; onLogout: () => void }) {
+export type View = "chats" | "agenda";
+
+export function TopBar({
+  status,
+  view,
+  onView,
+  onLogout,
+}: {
+  status: Status | null;
+  view: View;
+  onView: (v: View) => void;
+  onLogout: () => void;
+}) {
   return (
     <header className="topbar">
       <div className="brand">
@@ -8,8 +20,17 @@ export function TopBar({ status, onLogout }: { status: Status | null; onLogout: 
           RS
         </span>
         <strong>Red Soluciones</strong>
-        <span className="muted hide-sm">Conversaciones</span>
       </div>
+      {status?.appointmentsEnabled && (
+        <nav className="tabs" aria-label="Secciones">
+          <button className={view === "chats" ? "tab on" : "tab"} aria-current={view === "chats"} onClick={() => onView("chats")}>
+            Conversaciones
+          </button>
+          <button className={view === "agenda" ? "tab on" : "tab"} aria-current={view === "agenda"} onClick={() => onView("agenda")}>
+            Agenda
+          </button>
+        </nav>
+      )}
       <div className="chips">
         {status && (
           <>

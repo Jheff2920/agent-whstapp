@@ -61,6 +61,23 @@ export function CustomerPanel({ detail, open, onClose, onPatch, onPutFact, onDel
         onBlur={() => summary.trim() !== (c.summary ?? "") && void onPatch({ summary: summary.trim() || null })}
       />
 
+      {c.appointments.length > 0 && (
+        <>
+          <h3>Citas próximas</h3>
+          <ul className="facts">
+            {c.appointments.map((a) => (
+              <li key={a.id}>
+                <span>
+                  <strong>#{a.id}</strong> {a.text}
+                  <br />
+                  <span className="muted">a nombre de {a.contactName}</span>
+                </span>
+              </li>
+            ))}
+          </ul>
+        </>
+      )}
+
       <h3>Datos recordados</h3>
       <ul className="facts">
         {c.facts.map((f) => (

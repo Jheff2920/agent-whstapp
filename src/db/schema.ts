@@ -94,4 +94,6 @@ export const MIGRATIONS: string[] = [
   CREATE INDEX idx_appt_customer ON appointments(customer_id, starts_at);
   CREATE UNIQUE INDEX uq_appt_customer_slot ON appointments(customer_id, sede, starts_at) WHERE status = 'confirmada';
   `,
+  // plantilla de WhatsApp para mensajes fuera de la ventana de 24 h (JSON {name, lang, params})
+  `ALTER TABLE outbox ADD COLUMN template TEXT;`,
 ];

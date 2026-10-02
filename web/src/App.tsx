@@ -4,7 +4,8 @@ import { ConversationList } from "./components/ConversationList";
 import { CustomerPanel } from "./components/CustomerPanel";
 import { Login } from "./components/Login";
 import { Thread } from "./components/Thread";
-import { TopBar } from "./components/TopBar";
+import { Agenda } from "./components/Agenda";
+import { TopBar, type View } from "./components/TopBar";
 import type { Detail, ListItem, Status } from "./types";
 
 type Auth = "loading" | "login" | "ready";
@@ -42,6 +43,8 @@ function Panel({ onLogout, onExpired }: { onLogout: () => void; onExpired: () =>
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
   const [infoOpen, setInfoOpen] = useState(false);
+  const [view, setView] = useState<View>("chats");
+  const [agendaTick, setAgendaTick] = useState(0);
 
   const activeRef = useRef(activeId);
   activeRef.current = activeId;
@@ -113,6 +116,7 @@ function Panel({ onLogout, onExpired }: { onLogout: () => void; onExpired: () =>
     const es = new EventSource("/api/events");
     const onEvent = (ev: MessageEvent) => {
       const { conversationId } = JSON.parse(ev.data) as { conversationId: number };
+      if (ev.type === "agenda") setAgendaTick((n) => n + 1);
       if (conversationId === activeRef.current) pendingId = conversationId;
       clearTimeout(timer);
       timer = setTimeout(() => {
@@ -122,7 +126,7 @@ function Panel({ onLogout, onExpired }: { onLogout: () => void; onExpired: () =>
         pendingId = null;
       }, 250);
     };
-    for (const type of ["message", "conversation", "outbox"]) es.addEventListener(type, onEvent as EventListener);
+    for (const type of ["message", "conversation", "outbox", "agenda"]) es.addEventListener(type, onEvent as EventListener);
     return () => {
       clearTimeout(timer);
       es.close();
@@ -156,9 +160,25 @@ function Panel({ onLogout, onExpired }: { onLogout: () => void; onExpired: () =>
     history.replaceState(null, "", `?c=${id}`);
   };
 
+  if (view === "agenda") {
+    return (
+      <div className="app" data-view="agenda">
+        <TopBar status={status} view={view} onView={setView} onLogout={onLogout} />
+        <Agenda
+          sedesRefresh={agendaTick}
+          onExpired={onExpired}
+          onOpenChat={(id) => {
+            setView("chats");
+            select(id);
+          }}
+        />
+      </div>
+    );
+  }
+
   return (
     <div className="app" data-view={activeId === null ? "list" : infoOpen ? "info" : "thread"}>
-      <TopBar status={status} onLogout={onLogout} />
+      <TopBar status={status} view={view} onView={setView} onLogout={onLogout} />
       <ConversationList
         items={items}
         activeId={activeId}

@@ -1,4 +1,4 @@
-import type { Detail, ListItem, Status } from "./types";
+import type { AgendaData, Appointment, Detail, ListItem, NewAppointment, Status } from "./types";
 
 export class ApiError extends Error {
   constructor(
@@ -38,4 +38,15 @@ export const api = {
   putFact: (id: number, key: string, value: string) => call<Detail>("PUT", `/api/customers/${id}/facts`, { key, value }),
   deleteFact: (id: number, key: string) => call<Detail>("DELETE", `/api/customers/${id}/facts/${encodeURIComponent(key)}`),
   status: () => call<Status>("GET", "/api/status"),
+  agenda: (from: string, to: string, sede: string) =>
+    call<AgendaData>("GET", `/api/agenda?from=${from}&to=${to}${sede ? `&sede=${encodeURIComponent(sede)}` : ""}`),
+  slots: (sede: string, fecha: string, exclude?: number) =>
+    call<{ hours: string[] }>("GET", `/api/agenda/slots?sede=${encodeURIComponent(sede)}&fecha=${fecha}${exclude ? `&excluir=${exclude}` : ""}`),
+  createAppointment: (a: NewAppointment) => call<{ appointment: Appointment }>("POST", "/api/agenda", a),
+  cancelAppointment: (id: number) => call<{ appointment: Appointment }>("POST", `/api/agenda/${id}/cancel`),
+  rescheduleAppointment: (id: number, fecha: string, hora: string) =>
+    call<{ appointment: Appointment }>("POST", `/api/agenda/${id}/reschedule`, { fecha, hora }),
+  appointmentStatus: (id: number, status: "completada" | "no_asistio") =>
+    call<{ appointment: Appointment }>("POST", `/api/agenda/${id}/status`, { status }),
+  resyncAppointment: (id: number) => call<{ appointment: Appointment }>("POST", `/api/agenda/${id}/resync`),
 };

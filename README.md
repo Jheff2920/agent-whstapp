@@ -66,7 +66,7 @@ El agente **solo afirma lo que esté en estos archivos**; no inventa productos, 
 | Archivo | Contenido | Estado |
 |---|---|---|
 | `catalog.json` | 82 productos del **Catálogo Red Soluciones 2026** (16 categorías): marca, modelo, características, precio en soles, garantía y página del PDF | ✅ cargado |
-| `sedes.yml` | Las dos sedes (Cyberplaza y San Isidro): dirección y horario por día, hora de Lima | ✅ cargado |
+| `sedes.yml` | Las dos sedes (Cyberplaza y San Isidro): dirección y horario por día, hora de Lima; reglas de citas y feriados | ✅ cargado (**confirma la lista de feriados**) |
 | `empresa.md` | Qué ofrece, precios con IGV, garantía y devoluciones, formas de pago (Interbank, BCP, Plin, Yape), envíos nacionales, boleta/factura, contacto | ✅ completo: pagos, envíos nacionales y comprobantes cargados |
 | `resenas.md` | Reseñas reales de clientes, citadas textualmente | opcional: **no existe**; sin él el agente no menciona opiniones de clientes |
 
@@ -76,12 +76,42 @@ quede algún `TODO` en un archivo obligatorio. Los tests usan datos ficticios en
 
 El prompt incluye además el **estado de las sedes ahora** (abierta/cerrada y cuándo abre), calculado con la hora de Lima
 en código y no por el modelo. El tono (cercano y profesional, de "tú", sin emojis) está en las reglas de `src/agent/prompt.ts`.
-Por ahora el agente **no agenda citas**: da dirección y horario de la sede y deriva a una persona si el cliente quiere reservar.
+Si `sedes.yml` no tiene la sección `citas`, el agente no agenda: da dirección y horario y deriva a una persona.
 
 El catálogo completo no cabe en el prompt, así que el modelo recibe un **índice** (modelo, marca y precio, ≈2 000 tokens
 en total) y consulta las especificaciones con la herramienta `search_catalog` (por modelo o palabras clave).
 Cada producto se transcribió tal como figura en el PDF; los modelos repetidos con distinta configuración
 (SWIFT 2, FALCON 1, SWAN 2, ZD230) se distinguen por `variante`.
+
+## Citas en tienda
+
+El cliente puede reservar una visita por WhatsApp. Reglas (en `knowledge/sedes.yml`, sección `citas`):
+
+| Regla | Valor |
+|---|---|
+| Duración de cada cita | 1 hora |
+| Anticipación mínima | 1 hora |
+| Citas simultáneas | 2 por franja **en cada sede** (hay personal en ambas) |
+| Feriados | no se atiende ni se agenda (lista `feriados`) |
+| Horario | el de cada sede (Cyberplaza lun–sáb 10–19, San Isidro lun–vie 9–18 y sáb 9–13); domingos cerrado |
+| Límites de protección propuestos | hasta 30 días hacia adelante y 2 citas próximas por cliente (ajustables) |
+
+**Cómo se evita que el modelo se equivoque:** el agente solo ofrece horarios que devuelve la herramienta
+`check_availability`, y la reserva (`book_appointment`) la valida el código: horario de la sede, feriados, anticipación,
+horizonte y cupos, dentro de una transacción de SQLite (no hay doble reserva aunque lleguen dos mensajes a la vez). Los
+textos de confirmación salen de código (día, hora y dirección exactos); el modelo solo los repite. No se reserva sin que el
+cliente haya respondido que sí (`cliente_confirmo`). El bot solo puede ver y tocar las citas del propio cliente.
+Herramientas: `check_availability`, `book_appointment`, `my_appointments`, `cancel_appointment`, `reschedule_appointment`.
+
+- **Base de datos = fuente de verdad; Google Calendar = espejo.** Si Google falla, la cita sigue confirmada, se
+  reintenta (hasta 8 veces) y después se avisa por Telegram y el panel muestra «Google ✗» con un botón «Reintentar».
+  Cada sede tiene su calendario (`calendar_id`); sin él la cita solo vive en el sistema. Configuración: [`deploy/README.md` §6](./deploy/README.md).
+- **Avisos a asesores** (Telegram) cuando el asistente agenda, cancela o cambia una cita.
+- **Recordatorio** 3 horas antes (nunca antes de las 8:00 de Lima): texto libre si el cliente escribió en las últimas 24 h; si no,
+  una **plantilla aprobada por Meta** (`WA_REMINDER_TEMPLATE`). Sin plantilla el aviso no sale y queda una nota en la conversación.
+  Ver [`deploy/README.md` §7](./deploy/README.md).
+- **Feriados:** la lista de `sedes.yml` cubre hasta fines de 2027 y viene del calendario oficial peruano; **revísala**
+  y agrega los días no laborables que decrete el gobierno. Al arrancar se avisa si la lista no cubre el período reservable.
 
 ## Panel web (bandeja de conversaciones)
 
@@ -92,7 +122,8 @@ Un panel tipo WhatsApp Web para ver las conversaciones en vivo y **tomar el cont
 - **Hilo:** mensajes del cliente, del asistente y de asesores (con estado: en cola, enviado, entregado, leído, no se envió),
   notas internas, **Tomar control** / **Devolver al asistente**. Al escribir con el asistente activo, la persona toma el
   control automáticamente para que no hablen los dos. No deja enviar fuera de la ventana de 24 h ni a clientes dados de baja.
-- **Ficha del cliente:** nombre, etapa comercial, resumen y datos recordados (editables).
+- **Ficha del cliente:** nombre, etapa comercial, resumen, datos recordados (editables) y citas próximas.
+- **Agenda:** semana por semana, filtro por sede, crear/reprogramar/cancelar citas a mano, marcar «completada» o «no asistió» y ver si cada cita llegó a Google Calendar.
 - **Tiempo real:** los mensajes aparecen sin recargar (SSE). Funciona en escritorio y en el celular, con modo claro y oscuro.
 
 ```bash
@@ -146,6 +177,7 @@ src/
   outbox.ts            cola de salida con reintentos y ventana de 24 h
   queue.ts             serialización por cliente
   agent/               loop del agente, prompt y herramientas
+  appointments/        citas: reglas y cupos, franjas, espejo en Google Calendar y recordatorios
   llm/                 interfaz común + proveedores Ollama y Anthropic
   knowledge/           carga y búsqueda del conocimiento del negocio
   db/                  SQLite (better-sqlite3) y repositorio
@@ -166,7 +198,7 @@ tests/                 vitest (+ fixtures ficticios)
 
 1. ✅ **Base:** modelo intercambiable, agente, memoria por cliente, entrada/salida, tests.
 2. ✅ **Conexión directa con Meta (sin n8n)**, alertas por Telegram y **panel web** de conversaciones con toma de control. n8n queda opcional.
-3. **Citas en tienda** con Google Calendar vía n8n (zona horaria `America/Lima`) y recordatorios.
+3. ✅ **Citas en tienda** (cupos por sede, feriados, agenda en el panel, espejo en Google Calendar y recordatorios).
 4. **Aprendizaje:** resúmenes por cliente y aprendizajes globales que tú apruebas antes de que entren al prompt; seguimientos.
 5. Despliegue en **Raspberry Pi** (systemd, Cloudflare Tunnel, copias de seguridad).
 6. **Llamadas de voz** (ruta y proveedor por decidir).

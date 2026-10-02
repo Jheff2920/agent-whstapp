@@ -81,3 +81,49 @@ contraseña del panel) o si quedan secciones `TODO` en `knowledge/`.
 4. Escribe "quiero hablar con una persona": la conversación pasa a *Escalado* y te llega el aviso por Telegram.
 
 > Si usas el modo n8n en vez de este, mira [`../n8n/README.md`](../n8n/README.md).
+
+## 6. Citas: espejo en Google Calendar (opcional)
+
+No hace falta darme acceso a tu cuenta de Google. Se usa una **cuenta de servicio** (un "robot" con su propio correo)
+a la que compartes los calendarios. Nunca pegues la clave JSON en el chat ni la subas a GitHub.
+
+1. Entra a <https://console.cloud.google.com> y crea un proyecto (p. ej. «Red Soluciones citas»).
+2. *APIs y servicios → Biblioteca* → busca **Google Calendar API** → **Habilitar**.
+3. *IAM y administración → Cuentas de servicio → Crear cuenta de servicio* (nombre: `citas-whatsapp`; no necesita roles).
+4. Abre la cuenta creada → pestaña **Claves → Agregar clave → Crear clave nueva → JSON**. Se descarga un archivo:
+   guárdalo en el equipo donde corre el servicio (p. ej. `./secrets/google.json`, carpeta ignorada por git) y pon su ruta en
+   `GOOGLE_SERVICE_ACCOUNT_FILE`. Copia también el correo de la cuenta (`citas-whatsapp@…iam.gserviceaccount.com`).
+5. En **Google Calendar** crea **dos calendarios**, «Citas Cyberplaza» y «Citas San Isidro» (*Otros calendarios → Crear*).
+6. Para cada uno: *Configuración y uso compartido → Compartir con personas* → agrega el correo de la cuenta de servicio con
+   el permiso **«Realizar cambios en eventos»**. Más abajo, en *Integrar el calendario*, copia el **ID del calendario**
+   (termina en `@group.calendar.google.com`).
+7. En `knowledge/sedes.yml` agrega el ID a cada sede:
+   ```yaml
+   - id: cyberplaza
+     nombre: Cyberplaza
+     calendar_id: "xxxxxxxx@group.calendar.google.com"
+   ```
+8. Reinicia el servicio: en el log verás «espejo en Google Calendar activo». Agenda una cita de prueba desde el panel y
+   comprueba que aparece en el calendario de la sede y que la tarjeta muestra «Google ✓».
+
+Los eventos incluyen nombre, motivo y el número de WhatsApp del cliente: comparte los calendarios solo con quien deba verlos.
+Si una cita muestra «Google ✗», pasa el cursor por el chip para ver el error (casi siempre es que el calendario no está
+compartido con la cuenta de servicio o que el ID está mal) y pulsa «Reintentar Google».
+
+## 7. Citas: recordatorios por WhatsApp (plantilla de Meta)
+
+WhatsApp solo permite mensajes libres durante las 24 h siguientes al último mensaje del cliente. Como la mayoría de
+las citas se piden con más de un día de antelación, el recordatorio de esos casos debe ir como **plantilla aprobada**:
+
+1. En <https://business.facebook.com> → *Administrador de WhatsApp → Plantillas de mensajes → Crear plantilla*.
+2. Categoría **Utilidad**, nombre `recordatorio_cita`, idioma **Español** (`es`).
+3. Cuerpo (las variables van en este orden exacto):
+   ```
+   Hola {{1}}, te recordamos tu cita en Red Soluciones, sede {{2}}: {{3}}. Dirección: {{4}}. Si no puedes asistir, respóndenos por este chat y la reprogramamos.
+   ```
+   Ejemplos para el formulario: `Ana`, `Cyberplaza`, `martes 6 de octubre a las 15:00`, `Av. Garcilazo de la Vega 1348`.
+4. Espera la aprobación de Meta (suele tardar de minutos a un día) y define en `.env`:
+   `WA_REMINDER_TEMPLATE=recordatorio_cita` y `WA_REMINDER_LANG=es`.
+
+El aviso sale 3 horas antes de la cita (nunca antes de las 8:00 de Lima) y una sola vez; si la reprograman, se reinicia.
+Los recordatorios solo funcionan en modo directo (no con n8n).

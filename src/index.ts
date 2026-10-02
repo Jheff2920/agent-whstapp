@@ -2,6 +2,7 @@ import pino from "pino";
 import { Agent } from "./agent/agent.js";
 import { GoogleCalendarClient, GoogleSync, loadServiceAccount } from "./appointments/google.js";
 import { AppointmentService } from "./appointments/service.js";
+import { ReminderScheduler } from "./appointments/reminders.js";
 import { holidayCoverageWarning } from "./appointments/slots.js";
 import { localYmd } from "./appointments/time.js";
 import { loadConfig } from "./config.js";
@@ -157,6 +158,17 @@ const panel = await buildPanelApp({
 
 outbox.start();
 googleSync?.start();
+const reminders = appointments.enabled
+  ? new ReminderScheduler(repo, outbox, appointments, log, {
+      timezone: cfg.timezone,
+      templateName: cfg.waReminderTemplate || undefined,
+      templateLang: cfg.waReminderLang,
+    })
+  : undefined;
+if (reminders && sendMode !== "log") {
+  reminders.start();
+  if (!cfg.waReminderTemplate) log.warn("Sin WA_REMINDER_TEMPLATE: los recordatorios solo salen si el cliente escribió en las últimas 24 h");
+}
 await app.listen({ port: cfg.port, host: "0.0.0.0" });
 await panel.listen({ port: cfg.panelPort, host: cfg.panelHost });
 log.info(`Panel: http://${cfg.panelHost === "0.0.0.0" ? "localhost" : cfg.panelHost}:${cfg.panelPort}`);
@@ -165,6 +177,7 @@ const shutdown = async (signal: string) => {
   log.info({ signal }, "apagando");
   outbox.stop();
   googleSync?.stop();
+  reminders?.stop();
   await app.close();
   await panel.close();
   await queue.idle();
