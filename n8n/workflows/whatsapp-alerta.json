@@ -1,0 +1,128 @@
+{
+  "name": "Red Soluciones - Alerta a asesores",
+  "nodes": [
+    {
+      "id": "c1595055-36e4-4b1f-ab0f-d7f4370a9c77",
+      "name": "El cerebro envía una alerta",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        0,
+        96
+      ],
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "red-whatsapp-alerta",
+        "authentication": "headerAuth",
+        "responseMode": "responseNode"
+      },
+      "webhookId": "9d9fc80e-94e2-40e6-b91a-c0281a84661e"
+    },
+    {
+      "id": "8c2637ca-6768-4227-96dc-de706a965112",
+      "name": "Avisar al asesor por correo",
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.2,
+      "position": [
+        224,
+        96
+      ],
+      "parameters": {
+        "resource": "message",
+        "operation": "send",
+        "sendTo": "ventas@TU-EMPRESA.com",
+        "subject": "={{ ({ escalado: \"Conversación escalada\", mensaje_pendiente: \"Cliente esperando respuesta\", cotizacion: \"Solicitud de cotización\" })[$json.body.type] ?? \"Alerta de WhatsApp\" }} - {{ $json.body.customerName ?? (\"+\" + $json.body.waId) }}",
+        "emailType": "text",
+        "message": "=Cliente: {{ $json.body.customerName ?? \"(sin nombre)\" }} (+{{ $json.body.waId }})\nMotivo: {{ $json.body.reason ?? \"El cliente espera una respuesta de un asesor\" }}\nÚltimo mensaje del cliente: {{ $json.body.lastMessage ?? \"-\" }}\n\nAbrir la conversación: {{ $json.body.panelUrl ?? \"(configura PANEL_URL en el cerebro para recibir el enlace)\" }}",
+        "options": {
+          "appendAttribution": false,
+          "senderName": "Asistente Red Soluciones"
+        }
+      },
+      "onError": "continueErrorOutput",
+      "webhookId": "50af55ad-ba54-4890-9110-934eaa4c0207"
+    },
+    {
+      "id": "1e4b61dc-7925-475d-b365-f9873a51170a",
+      "name": "Confirmar al cerebro",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.5,
+      "position": [
+        448,
+        0
+      ],
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ { \"ok\": true } }}",
+        "options": {
+          "responseCode": 200
+        }
+      }
+    },
+    {
+      "id": "ae9741da-a6f3-4149-b82b-9332cea9693b",
+      "name": "Informar fallo de la alerta",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.5,
+      "position": [
+        448,
+        192
+      ],
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ { \"error\": $json.error?.message ?? \"No se pudo enviar el correo\" } }}",
+        "options": {
+          "responseCode": 502
+        }
+      }
+    },
+    {
+      "id": "52c08178-1a35-4a32-bc6f-56f8f58c6e4b",
+      "name": "Nota de configuración",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        160,
+        192
+      ],
+      "parameters": {
+        "content": "## Red Soluciones: alerta a asesores\nEl cerebro llama a este webhook cuando una conversación se escala a una persona, cuando un cliente escribe mientras un asesor atiende (máximo una alerta cada 10 min por conversación) y cuando se registra una solicitud de cotización.\n1. Usa la misma credencial Header Auth del workflow de salida (cabecera X-Internal-Token) en el webhook.\n2. Conecta tu cuenta de Google en el nodo de Gmail y escribe el correo que recibirá las alertas.\n3. Publica el workflow y pon en el cerebro ALERT_URL con la URL de producción de este webhook (.../webhook/red-whatsapp-alerta).\nPara usar Telegram u otro canal, reemplaza solo el nodo de correo.",
+        "color": 4
+      }
+    }
+  ],
+  "connections": {
+    "El cerebro envía una alerta": {
+      "main": [
+        [
+          {
+            "node": "Avisar al asesor por correo",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Avisar al asesor por correo": {
+      "main": [
+        [
+          {
+            "node": "Confirmar al cerebro",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Informar fallo de la alerta",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1"
+  }
+}

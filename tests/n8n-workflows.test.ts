@@ -59,8 +59,28 @@ describe("workflows de n8n versionados", () => {
     expect(byName(salida, "Informar fallo de envío").parameters.options.responseCode).toBe(502);
   });
 
+  it("alerta: se autentica con la cabecera interna y usa los campos que envía el cerebro", () => {
+    const alerta = load("whatsapp-alerta");
+    const names = new Set(alerta.nodes.map((n) => n.name));
+    for (const [from, out] of Object.entries(alerta.connections)) {
+      expect(names.has(from)).toBe(true);
+      for (const branch of out.main) for (const c of branch) expect(names.has(c.node)).toBe(true);
+    }
+    const hook = byName(alerta, "El cerebro envía una alerta");
+    expect(hook.parameters.authentication).toBe("headerAuth");
+    expect(hook.parameters.path).toBe("red-whatsapp-alerta");
+    const mail = byName(alerta, "Avisar al asesor por correo");
+    const template = JSON.stringify(mail.parameters);
+    // los campos del AlertPayload del cerebro (src/notify.ts) y los tres tipos de alerta
+    for (const field of ["type", "customerName", "waId", "reason", "lastMessage", "panelUrl"]) {
+      expect(template, field).toContain(`$json.body.${field}`);
+    }
+    for (const type of ["escalado", "mensaje_pendiente", "cotizacion"]) expect(template, type).toContain(type);
+    expect(byName(alerta, "Informar fallo de la alerta").parameters.options.responseCode).toBe(502);
+  });
+
   it("no hay secretos en los workflows", () => {
-    const all = JSON.stringify([entrada, salida]);
+    const all = JSON.stringify([entrada, salida, load("whatsapp-alerta")]);
     expect(all).not.toMatch(/EAA[A-Za-z0-9]{20,}/); // token de acceso de Meta
     expect(all).not.toMatch(/sk-ant-/);
   });

@@ -8,8 +8,10 @@ hace el agente, la memoria y la cola de salida. Hay dos workflows:
 | `workflows/whatsapp-entrada.json` | Meta → n8n → `POST /api/inbound` del cerebro (reenvía el cuerpo **crudo** y la firma `X-Hub-Signature-256`; si el cerebro falla responde 500 para que Meta reintente) | `https://jheff2920.app.n8n.cloud/webhook/red-whatsapp` (GET para verificar y POST para mensajes) |
 | `workflows/whatsapp-salida.json` | cerebro → n8n → WhatsApp Business Cloud; devuelve `{ "wa_message_id": "..." }` o 502 | `https://jheff2920.app.n8n.cloud/webhook/red-whatsapp-enviar` |
 
+| `workflows/whatsapp-alerta.json` | cerebro → n8n → correo (Gmail) a un asesor cuando una conversación se escala, un cliente espera respuesta mientras atiende una persona, o se pide una cotización; incluye el enlace al panel | `https://jheff2920.app.n8n.cloud/webhook/red-whatsapp-alerta` |
+
 Ya están creados (sin publicar) en tu n8n Cloud; estos JSON son la copia versionada (se pueden importar con
-*Import from file*, pero los marcadores `TU-URL-PUBLICA-DEL-CEREBRO` y `TU_PHONE_NUMBER_ID` hay que reemplazarlos).
+*Import from file*, pero los marcadores `TU-URL-PUBLICA-DEL-CEREBRO` y `TU_PHONE_NUMBER_ID` hay que reemplazarlos; en la alerta también `ventas@TU-EMPRESA.com`).
 
 ## Qué tienes que hacer tú (las credenciales no las puedo crear yo)
 
@@ -27,10 +29,17 @@ Ya están creados (sin publicar) en tu n8n Cloud; estos JSON son la copia versio
 7. En Meta (WhatsApp → Configuración → Webhook): URL `https://jheff2920.app.n8n.cloud/webhook/red-whatsapp`, token de
    verificación `rs-wa-verify-7f3k9q2m` (el del nodo *¿Token de verificación correcto?*; cámbialo en ambos sitios si
    prefieres otro) y suscribe el campo `messages`.
-8. **Publica** los dos workflows en n8n.
+8. **Alertas:** en el webhook de *Alerta a asesores* usa la **misma credencial Header Auth** del paso 3, conecta tu cuenta de
+   Google en el nodo de Gmail y escribe el correo que recibirá los avisos. En el `.env` del cerebro:
+   `ALERT_URL=https://jheff2920.app.n8n.cloud/webhook/red-whatsapp-alerta` y `PANEL_URL` con la dirección desde la que abres
+   el panel (p. ej. `http://192.168.1.50:3001`) para que el correo traiga el enlace directo a la conversación.
+   Para usar Telegram u otro canal basta con reemplazar el nodo de correo.
+9. **Publica** los tres workflows en n8n.
 
 ## Contrato (lo comprueba `tests/n8n-workflows.test.ts`)
 
 - Entrada: el cuerpo se reenvía byte a byte (webhook con *Raw Body* y petición con cuerpo binario) para que la firma
   HMAC coincida; cabeceras `X-Hub-Signature-256` y `X-Internal-Token`.
 - Salida: el cerebro hace `POST` con `{ outboxId, messageId, to, text }` y la cabecera `X-Internal-Token`.
+- Alertas: el cerebro hace `POST` con `{ type, conversationId, customerName, waId, reason, lastMessage, panelUrl }`
+  (`type`: `escalado`, `mensaje_pendiente` o `cotizacion`) y la cabecera `X-Internal-Token`; n8n responde 200 o 502.
