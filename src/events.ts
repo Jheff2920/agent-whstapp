@@ -1,7 +1,8 @@
 import { EventEmitter } from "node:events";
 
 export interface PanelEvent {
-  type: "message" | "conversation" | "outbox";
+  type: "message" | "conversation" | "outbox" | "agenda";
+  /** 0 en eventos que no pertenecen a una conversación (agenda). */
   conversationId: number;
 }
 

@@ -46,6 +46,28 @@ export interface OutboxRow {
   created_at: string;
 }
 
+export type AppointmentStatus = "confirmada" | "cancelada" | "completada" | "no_asistio";
+
+export interface AppointmentRow {
+  id: number;
+  customer_id: number;
+  conversation_id: number | null;
+  sede: string;
+  starts_at: string;
+  ends_at: string;
+  contact_name: string;
+  purpose: string | null;
+  status: AppointmentStatus;
+  source: "bot" | "panel";
+  google_event_id: string | null;
+  google_sync: "pendiente" | "ok" | "error" | "no_aplica";
+  google_error: string | null;
+  google_attempts: number;
+  reminder_sent_at: string | null;
+  created_at: string;
+  updated_at: string;
+}
+
 export interface ConversationRow {
   id: number;
   mode: Mode;
@@ -382,5 +404,117 @@ export class Repo {
       .prepare("SELECT summary FROM quote_requests WHERE customer_id = ? ORDER BY id DESC LIMIT 1")
       .get(customerId) as { summary: string } | undefined;
     return row?.summary;
+  }
+
+  // ---- citas ----
+
+  /** Citas confirmadas de la sede que se cruzan con [start, end). */
+  countOverlapping(sede: string, startIso: string, endIso: string, excludeId?: number): number {
+    const row = this.db
+      .prepare(
+        `SELECT COUNT(*) AS n FROM appointments
+         WHERE sede = ? AND status = 'confirmada' AND starts_at < ? AND ends_at > ? AND id != ?`,
+      )
+      .get(sede, endIso, startIso, excludeId ?? -1) as { n: number };
+    return row.n;
+  }
+
+  insertAppointment(a: {
+    customerId: number;
+    conversationId?: number | null;
+    sede: string;
+    startsAt: string;
+    endsAt: string;
+    contactName: string;
+    purpose?: string | null;
+    source: "bot" | "panel";
+    googleSync: "pendiente" | "no_aplica";
+  }): AppointmentRow {
+    const ts = now();
+    const info = this.db
+      .prepare(
+        `INSERT INTO appointments (customer_id, conversation_id, sede, starts_at, ends_at, contact_name, purpose,
+                                   source, google_sync, created_at, updated_at)
+         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+      )
+      .run(a.customerId, a.conversationId ?? null, a.sede, a.startsAt, a.endsAt, a.contactName, a.purpose ?? null, a.source, a.googleSync, ts, ts);
+    return this.getAppointment(Number(info.lastInsertRowid))!;
+  }
+
+  getAppointment(id: number): AppointmentRow | undefined {
+    return this.db.prepare("SELECT * FROM appointments WHERE id = ?").get(id) as AppointmentRow | undefined;
+  }
+
+  /** Citas confirmadas futuras de un cliente, en orden. */
+  upcomingAppointments(customerId: number, fromIso: string): AppointmentRow[] {
+    return this.db
+      .prepare(
+        `SELECT * FROM appointments WHERE customer_id = ? AND status = 'confirmada' AND ends_at > ?
+         ORDER BY starts_at`,
+      )
+      .all(customerId, fromIso) as AppointmentRow[];
+  }
+
+  /** Agenda: citas que empiezan en [fromIso, toIso), con cliente, opcionalmente de una sola sede. */
+  listAppointments(fromIso: string, toIso: string, sede?: string): (AppointmentRow & { wa_id: string; customer_name: string | null })[] {
+    return this.db
+      .prepare(
+        `SELECT a.*, u.wa_id, u.name AS customer_name FROM appointments a JOIN customers u ON u.id = a.customer_id
+         WHERE a.starts_at >= ? AND a.starts_at < ? ${sede ? "AND a.sede = ?" : ""}
+         ORDER BY a.starts_at, a.id`,
+      )
+      .all(...(sede ? [fromIso, toIso, sede] : [fromIso, toIso])) as (AppointmentRow & { wa_id: string; customer_name: string | null })[];
+  }
+
+  updateAppointment(
+    id: number,
+    patch: Partial<{
+      startsAt: string;
+      endsAt: string;
+      contactName: string;
+      purpose: string | null;
+      status: AppointmentStatus;
+      googleEventId: string | null;
+      googleSync: AppointmentRow["google_sync"];
+      googleError: string | null;
+      googleAttempts: number;
+      reminderSentAt: string | null;
+    }>,
+  ): void {
+    const cols: Record<string, string> = {
+      startsAt: "starts_at",
+      endsAt: "ends_at",
+      contactName: "contact_name",
+      purpose: "purpose",
+      status: "status",
+      googleEventId: "google_event_id",
+      googleSync: "google_sync",
+      googleError: "google_error",
+      googleAttempts: "google_attempts",
+      reminderSentAt: "reminder_sent_at",
+    };
+    const sets: string[] = [];
+    const args: (string | number | null)[] = [];
+    for (const [key, col] of Object.entries(cols)) {
+      const v = (patch as Record<string, string | number | null | undefined>)[key];
+      if (v !== undefined) {
+        sets.push(`${col} = ?`);
+        args.push(v);
+      }
+    }
+    if (!sets.length) return;
+    this.db.prepare(`UPDATE appointments SET ${sets.join(", ")}, updated_at = ? WHERE id = ?`).run(...args, now(), id);
+  }
+
+  /** Citas que aún deben sincronizarse con Google (nuevas, con error o canceladas con evento por borrar). */
+  appointmentsToSync(limit = 20): AppointmentRow[] {
+    return this.db
+      .prepare(
+        `SELECT * FROM appointments
+         WHERE google_sync IN ('pendiente','error') AND google_attempts < 8
+           AND (status = 'confirmada' OR google_event_id IS NOT NULL)
+         ORDER BY id LIMIT ?`,
+      )
+      .all(limit) as AppointmentRow[];
   }
 }

@@ -16,8 +16,14 @@ REGLAS INAMOVIBLES
 7. Si preguntan si eres una persona, aclara que eres un asistente virtual de Red Soluciones.
 8. Solo puedes citar reseñas si existe la sección RESEÑAS DE CLIENTES, y siempre textualmente. Si no existe, no menciones opiniones ni testimonios de clientes, ni digas que otros clientes están satisfechos.
 9. El catálogo del prompt puede ser solo un índice (modelo, marca y precio). Antes de afirmar características técnicas (velocidad, conexión, batería, medidas, etc.) de un producto, consúltalas con search_catalog usando el modelo. Si el cliente no sabe qué necesita, pregunta primero para qué lo usará (tipo de negocio, volumen, conexión requerida) y recomienda 1 o 2 opciones, no una lista larga.
-10. Nunca ofrezcas descuentos, precios por volumen ni plazos que no estén escritos: usa handoff_to_human.
-11. Por ahora no puedes agendar citas ni reservar productos. Si el cliente quiere visitar una sede, dale la dirección y el horario de esa sede (la que elija; si no sabe, ofrécele ambas) y, si quiere dejar una reserva o cita, usa handoff_to_human. No digas que una sede está abierta o cerrada por tu cuenta: guíate por "Estado de las sedes ahora". Sobre horarios en feriados no tienes información: que lo confirme un asesor.`;
+10. Nunca ofrezcas descuentos, precios por volumen ni plazos que no estén escritos: usa handoff_to_human.`;
+
+
+const RULE_NO_APPOINTMENTS =
+  "11. Por ahora no puedes agendar citas ni reservar productos. Si el cliente quiere visitar una sede, dale la dirección y el horario de esa sede (la que elija; si no sabe, ofrécele ambas) y, si quiere dejar una reserva o cita, usa handoff_to_human. No digas que una sede está abierta o cerrada por tu cuenta: guíate por \"Estado de las sedes ahora\". Sobre horarios en feriados no tienes información: que lo confirme un asesor.";
+
+const RULE_APPOINTMENTS =
+  "11. CITAS EN TIENDA. Puedes agendar visitas con check_availability, book_appointment, my_appointments, cancel_appointment y reschedule_appointment. Proceso: (a) pregunta a qué sede quiere ir (hay más de una); (b) consulta check_availability y ofrece solo 2 o 3 horarios que esa herramienta haya devuelto, nunca otros; (c) pide el nombre de quien vendrá y el motivo si no los tienes; (d) resume sede, día, hora y nombre y espera un sí explícito; (e) solo entonces llama book_appointment con cliente_confirmo=true; (f) confirma repitiendo exactamente lo que devolvió la herramienta (número de cita, día, hora, dirección). Nunca digas que una cita está agendada si la herramienta no lo confirmó. Convierte \"mañana\" o \"el jueves\" a AAAA-MM-DD usando la fecha actual de Lima indicada abajo y, si dudas, pregunta. Las citas duran lo que indica la herramienta, no se atiende en feriados y las reglas de anticipación y cupo las aplica la herramienta: si responde que no se puede, explícaselo y ofrece alternativas que ella devuelva. Si el cliente quiere cambiar o cancelar, usa my_appointments para ver el número. Si una herramienta de citas falla de forma repetida, usa handoff_to_human. No digas que una sede está abierta o cerrada por tu cuenta: guíate por \"Estado de las sedes ahora\".";
 
 const PENDING_NOTICE =
   "(Sin información cargada sobre este tema: no la inventes; si el cliente pregunta por esto, dile que un asesor lo confirmará y usa handoff_to_human.)";
@@ -34,10 +40,12 @@ export interface PromptContext {
   now: Date;
   timezone: string;
   learnings?: string[];
+  /** Citas en tienda: activas y las próximas de este cliente (ya redactadas). */
+  appointments?: { enabled: boolean; upcoming: string[] };
 }
 
 export function buildSystem(k: Knowledge, ctx: PromptContext): { stable: string; volatile: string } {
-  const parts: string[] = [RULES];
+  const parts: string[] = [`${RULES}\n${ctx.appointments?.enabled ? RULE_APPOINTMENTS : RULE_NO_APPOINTMENTS}`];
 
   parts.push(
     "# CONOCIMIENTO DE LA EMPRESA\n" +
@@ -82,6 +90,11 @@ export function buildSystem(k: Knowledge, ctx: PromptContext): { stable: string;
     k.sedes ? `Estado de las sedes ahora:\n${openStatus(k.sedes, ctx.now)}` : "",
     `Cliente: ${ctx.customer.name ?? "nombre aún desconocido"} · Etapa: ${ctx.customer.stage}`,
     ctx.facts.length ? "Datos recordados:\n" + ctx.facts.map((f) => `- ${f.key}: ${f.value}`).join("\n") : "",
+    ctx.appointments?.enabled
+      ? ctx.appointments.upcoming.length
+        ? "Citas próximas del cliente:\n" + ctx.appointments.upcoming.map((a) => `- ${a}`).join("\n")
+        : "Citas próximas del cliente: ninguna."
+      : "",
     ctx.customer.summary ? `Resumen de conversaciones previas: ${ctx.customer.summary}` : "",
   ]
     .filter(Boolean)

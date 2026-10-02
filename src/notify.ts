@@ -2,7 +2,7 @@ import type { Logger } from "pino";
 import type { Config } from "./config.js";
 
 export interface AlertPayload {
-  type: "escalado" | "mensaje_pendiente" | "cotizacion";
+  type: "escalado" | "mensaje_pendiente" | "cotizacion" | "cita_nueva" | "cita_cancelada" | "cita_reprogramada" | "agenda_google";
   conversationId: number;
   customerName: string | null;
   waId: string;
@@ -38,7 +38,13 @@ const TYPE_LABEL: Record<AlertPayload["type"], string> = {
   escalado: "Conversación escalada",
   mensaje_pendiente: "Cliente esperando respuesta",
   cotizacion: "Solicitud de cotización",
+  cita_nueva: "Nueva cita en tienda",
+  cita_cancelada: "Cita cancelada",
+  cita_reprogramada: "Cita reprogramada",
+  agenda_google: "Una cita no se pudo copiar a Google Calendar",
 };
+
+const IS_CITA = (t: AlertPayload["type"]) => t.startsWith("cita_") || t === "agenda_google";
 
 const clip = (s: string, n: number) => (s.length > n ? `${s.slice(0, n - 1)}…` : s);
 
@@ -47,8 +53,8 @@ export function formatAlertText(a: AlertPayload): string {
   return [
     TYPE_LABEL[a.type],
     `Cliente: ${a.customerName ?? "(sin nombre)"} (+${a.waId})`,
-    `Motivo: ${clip(a.reason ?? "El cliente espera una respuesta de un asesor", 500)}`,
-    `Último mensaje del cliente: ${clip(a.lastMessage ?? "-", 500)}`,
+    `${IS_CITA(a.type) ? "Detalle" : "Motivo"}: ${clip(a.reason ?? "El cliente espera una respuesta de un asesor", 500)}`,
+    IS_CITA(a.type) ? "" : `Último mensaje del cliente: ${clip(a.lastMessage ?? "-", 500)}`,
     a.panelUrl ? `Abrir la conversación: ${a.panelUrl}` : "",
   ]
     .filter(Boolean)
@@ -103,6 +109,11 @@ const COOLDOWN_MS: Record<AlertPayload["type"], number> = {
   cotizacion: 60_000,
   // un cliente impaciente puede escribir muchas veces: una alerta cada 10 min por conversación
   mensaje_pendiente: 10 * 60_000,
+  // cada cita es un aviso distinto: sin enfriamiento
+  cita_nueva: 0,
+  cita_cancelada: 0,
+  cita_reprogramada: 0,
+  agenda_google: 0,
 };
 
 /** Dispara alertas sin bloquear la conversación y sin repetirlas en ráfaga. */
@@ -119,7 +130,7 @@ export class AlertDispatcher {
     const key = `${alert.type}:${alert.conversationId}`;
     const t = this.now();
     const prev = this.last.get(key);
-    if (prev !== undefined && t - prev < COOLDOWN_MS[alert.type]) return;
+    if (COOLDOWN_MS[alert.type] > 0 && prev !== undefined && t - prev < COOLDOWN_MS[alert.type]) return;
     this.last.set(key, t);
     this.notifier.notify(alert).catch((err) => {
       this.last.delete(key); // que el próximo intento no quede bloqueado por una alerta que no salió

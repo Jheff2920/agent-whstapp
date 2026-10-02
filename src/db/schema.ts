@@ -68,4 +68,30 @@ export const MIGRATIONS: string[] = [
   );
   CREATE INDEX idx_outbox_due ON outbox(status, next_attempt_at);
   `,
+  `
+  CREATE TABLE appointments (
+    id INTEGER PRIMARY KEY,
+    customer_id INTEGER NOT NULL REFERENCES customers(id),
+    conversation_id INTEGER REFERENCES conversations(id),
+    sede TEXT NOT NULL,
+    starts_at TEXT NOT NULL,
+    ends_at TEXT NOT NULL,
+    contact_name TEXT NOT NULL,
+    purpose TEXT,
+    status TEXT NOT NULL DEFAULT 'confirmada'
+      CHECK (status IN ('confirmada','cancelada','completada','no_asistio')),
+    source TEXT NOT NULL DEFAULT 'bot' CHECK (source IN ('bot','panel')),
+    google_event_id TEXT,
+    google_sync TEXT NOT NULL DEFAULT 'pendiente'
+      CHECK (google_sync IN ('pendiente','ok','error','no_aplica')),
+    google_error TEXT,
+    google_attempts INTEGER NOT NULL DEFAULT 0,
+    reminder_sent_at TEXT,
+    created_at TEXT NOT NULL,
+    updated_at TEXT NOT NULL
+  );
+  CREATE INDEX idx_appt_sede_time ON appointments(sede, starts_at);
+  CREATE INDEX idx_appt_customer ON appointments(customer_id, starts_at);
+  CREATE UNIQUE INDEX uq_appt_customer_slot ON appointments(customer_id, sede, starts_at) WHERE status = 'confirmada';
+  `,
 ];

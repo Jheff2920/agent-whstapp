@@ -1,3 +1,4 @@
+import type { AppointmentService } from "../appointments/service.js";
 import type { Config } from "../config.js";
 import type { Message, Repo } from "../db/repos.js";
 import type { KnowledgeStore } from "../knowledge/loader.js";
@@ -24,6 +25,7 @@ export interface AgentDeps {
   knowledge: KnowledgeStore;
   cfg: Pick<Config, "historyLimit" | "maxToolIterations" | "timezone">;
   getLearnings?: () => string[];
+  appointments?: AppointmentService;
   onTool?: (name: string, input: unknown, output: string, isError: boolean) => void;
   now?: () => Date;
 }
@@ -61,6 +63,7 @@ export class Agent {
     }
 
     const knowledge = this.d.knowledge.get();
+    const appts = this.d.appointments;
     const system = buildSystem(knowledge, {
       customer,
       facts: repo.getFacts(customer.id),
@@ -68,10 +71,16 @@ export class Agent {
       now: (this.d.now ?? (() => new Date()))(),
       timezone: cfg.timezone,
       learnings: this.d.getLearnings?.(),
+      appointments: appts?.enabled
+        ? {
+            enabled: true,
+            upcoming: appts.customerUpcoming(customer.id).map((a) => `#${a.id} ${appts.describe(a)}, a nombre de ${a.contact_name}`),
+          }
+        : undefined,
     });
 
     const state: ToolState = { handoff: false };
-    const tools = buildTools({ repo, knowledge, conversationId, customerId: customer.id, state });
+    const tools = buildTools({ repo, knowledge, conversationId, customerId: customer.id, state, appointments: appts });
     const specs = tools.map(toToolSpec);
     const toolsUsed: string[] = [];
 

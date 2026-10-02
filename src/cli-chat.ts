@@ -1,5 +1,6 @@
 import readline from "node:readline/promises";
 import { Agent } from "./agent/agent.js";
+import { AppointmentService } from "./appointments/service.js";
 import { loadConfig } from "./config.js";
 import { openDb } from "./db/db.js";
 import { Repo } from "./db/repos.js";
@@ -14,11 +15,13 @@ const provider = createProvider(cfg);
 const dim = (s: string) => `\x1b[2m${s}\x1b[0m`;
 
 let waId = "chat-local";
+const appointments = new AppointmentService(repo, () => knowledge.get().sedes);
 const agent = new Agent({
   provider,
   repo,
   knowledge,
   cfg,
+  appointments,
   onTool: (name, input, output, isError) =>
     console.log(dim(`  [tool ${name}${isError ? " ERROR" : ""}] ${JSON.stringify(input)} -> ${output.slice(0, 160)}`)),
 });

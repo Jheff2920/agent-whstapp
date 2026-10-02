@@ -28,4 +28,39 @@ sedes:
       sabado: ["09:00-13:00"]
       domingo: []
 
-# Pendiente para la Fase 3 (citas): duración de cada cita, cuántas a la vez, anticipación mínima y feriados.
+# Citas en tienda. Los cupos son por sede (hay personal en ambas): como máximo `cupos_por_franja` citas a la vez.
+# duracion_min / anticipacion_min / cupos_por_franja los indicó el equipo (1 h, 1 h de anticipación, 2 por hora).
+# horizonte_dias y max_por_cliente son límites de protección propuestos: ajústalos si quieres.
+citas:
+  duracion_min: 60
+  anticipacion_min: 60
+  cupos_por_franja: 2
+  horizonte_dias: 30
+  max_por_cliente: 2
+
+# Feriados: no se atiende y no se agendan citas (AAAA-MM-DD). Lista tomada del calendario oficial de feriados de
+# Perú; CONFÍRMALA y complétala (feriados puente o días no laborables que decrete el gobierno) antes de producción.
+feriados:
+  - "2026-10-08"  # Combate de Angamos
+  - "2026-11-01"  # Todos los Santos
+  - "2026-12-08"  # Inmaculada Concepción
+  - "2026-12-09"  # Batalla de Ayacucho
+  - "2026-12-25"  # Navidad
+  - "2027-01-01"  # Año Nuevo
+  - "2027-03-25"  # Jueves Santo
+  - "2027-03-26"  # Viernes Santo
+  - "2027-05-01"  # Día del Trabajo
+  - "2027-06-07"  # Batalla de Arica y Día de la Bandera
+  - "2027-06-29"  # San Pedro y San Pablo
+  - "2027-07-23"  # Día de la Fuerza Aérea
+  - "2027-07-28"  # Fiestas Patrias
+  - "2027-07-29"  # Fiestas Patrias
+  - "2027-08-06"  # Batalla de Junín
+  - "2027-08-30"  # Santa Rosa de Lima
+  - "2027-10-08"  # Combate de Angamos
+  - "2027-11-01"  # Todos los Santos
+  - "2027-12-08"  # Inmaculada Concepción
+  - "2027-12-09"  # Batalla de Ayacucho
+  - "2027-12-25"  # Navidad
+
+# Para el espejo en Google Calendar agrega a cada sede:  calendar_id: "xxxx@group.calendar.google.com"

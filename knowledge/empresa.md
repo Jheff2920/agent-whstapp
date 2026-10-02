@@ -1,6 +1,6 @@
 # Red Soluciones
 
-Nombre que aparece en el catálogo 2026: RED DE SOLUCIONES® TECNOLOGICAS PERU S.A.C. (nombre comercial: Red Soluciones).
+Razón social: RED SOLUCIONES (nombre comercial: Red Soluciones). No se atiende en feriados.
 Los clientes compran de forma presencial en las sedes y también online. Las direcciones y horarios de las sedes están en `sedes.yml`.
 
 ## Qué ofrece la empresa

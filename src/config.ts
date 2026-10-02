@@ -38,6 +38,11 @@ const schema = z.object({
   TELEGRAM_BOT_TOKEN: z.string().default(""),
   TELEGRAM_CHAT_ID: z.string().default(""),
 
+  // Espejo en Google Calendar (cuenta de servicio) y recordatorios de citas
+  GOOGLE_SERVICE_ACCOUNT_FILE: z.string().default(""),
+  WA_REMINDER_TEMPLATE: z.string().default(""),
+  WA_REMINDER_LANG: z.string().default("es"),
+
   ALERT_URL: z.string().default(""),
   PANEL_URL: z.string().default(""),
   PANEL_PORT: z.coerce.number().int().default(3001),
@@ -77,6 +82,9 @@ export type Config = {
   waGraphBaseUrl: string;
   telegramBotToken: string;
   telegramChatId: string;
+  googleServiceAccountFile: string;
+  waReminderTemplate: string;
+  waReminderLang: string;
   alertUrl: string;
   panelUrl: string;
   panelPort: number;
@@ -122,6 +130,9 @@ export function loadConfig(env: NodeJS.ProcessEnv = process.env): Config {
     waGraphBaseUrl: e.WA_GRAPH_BASE_URL.replace(/\/$/, ""),
     telegramBotToken: e.TELEGRAM_BOT_TOKEN,
     telegramChatId: e.TELEGRAM_CHAT_ID,
+    googleServiceAccountFile: e.GOOGLE_SERVICE_ACCOUNT_FILE,
+    waReminderTemplate: e.WA_REMINDER_TEMPLATE,
+    waReminderLang: e.WA_REMINDER_LANG,
     alertUrl: e.ALERT_URL,
     panelUrl: e.PANEL_URL.replace(/\/$/, ""),
     panelPort: e.PANEL_PORT,

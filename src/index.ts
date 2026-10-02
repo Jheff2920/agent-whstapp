@@ -1,5 +1,9 @@
 import pino from "pino";
 import { Agent } from "./agent/agent.js";
+import { GoogleCalendarClient, GoogleSync, loadServiceAccount } from "./appointments/google.js";
+import { AppointmentService } from "./appointments/service.js";
+import { holidayCoverageWarning } from "./appointments/slots.js";
+import { localYmd } from "./appointments/time.js";
 import { loadConfig } from "./config.js";
 import { ConversationService } from "./conversation.js";
 import { openDb } from "./db/db.js";
@@ -59,12 +63,58 @@ const { notifier, channel: alertChannel } = selectNotifier(cfg);
 const alerts = new AlertDispatcher(notifier, log);
 if (alertChannel === "none") log.warn("Sin alertas: define TELEGRAM_BOT_TOKEN y TELEGRAM_CHAT_ID (o ALERT_URL de n8n) para avisar a los asesores");
 else log.info({ alertChannel }, "alertas a asesores");
+
+// Citas en tienda: la base de datos es la fuente de verdad; Google Calendar es un espejo
+let googleSync: GoogleSync | undefined;
+const appointments = new AppointmentService(repo, () => knowledge.get().sedes, {
+  onChange: ({ kind, appointment: a, sede, by }) => {
+    bus.emit({ type: "agenda", conversationId: 0 });
+    if (googleSync) void googleSync.run();
+    if (by === "panel") return; // lo hizo una persona: no hace falta avisarle a sí misma
+    const customer = repo.getCustomer(a.customer_id);
+    alerts.dispatch({
+      type: kind === "creada" ? "cita_nueva" : kind === "cancelada" ? "cita_cancelada" : "cita_reprogramada",
+      conversationId: a.conversation_id ?? 0,
+      customerName: a.contact_name,
+      waId: customer?.wa_id ?? "",
+      reason: `Cita #${a.id} · ${appointments.describe(a)}${a.purpose ? ` · ${a.purpose}` : ""}`,
+      panelUrl: cfg.panelUrl || undefined,
+    });
+  },
+});
+if (appointments.enabled) {
+  const warning = holidayCoverageWarning(knowledge.get().sedes!, localYmd(new Date(), cfg.timezone));
+  if (warning) log.warn(warning);
+  const withCalendar = knowledge.get().sedes!.sedes.filter((x) => x.calendar_id);
+  if (cfg.googleServiceAccountFile && withCalendar.length) {
+    googleSync = new GoogleSync(
+      repo,
+      new GoogleCalendarClient({ account: loadServiceAccount(cfg.googleServiceAccountFile) }),
+      () => knowledge.get().sedes,
+      log,
+      (a, error) =>
+        alerts.dispatch({
+          type: "agenda_google",
+          conversationId: a.conversation_id ?? 0,
+          customerName: a.contact_name,
+          waId: repo.getCustomer(a.customer_id)?.wa_id ?? "",
+          reason: `Cita #${a.id} (${appointments.describe(a)}) no llegó a Google Calendar tras varios intentos: ${error}`,
+          panelUrl: cfg.panelUrl || undefined,
+        }),
+      () => bus.emit({ type: "agenda", conversationId: 0 }),
+    );
+    log.info({ sedes: withCalendar.map((x) => x.id) }, "espejo en Google Calendar activo");
+  } else {
+    log.warn("Citas activas sin Google Calendar (falta GOOGLE_SERVICE_ACCOUNT_FILE o calendar_id en sedes.yml): solo se guardan en el sistema");
+  }
+}
 const queue = new KeyedQueue((err) => log.error({ err }, "error procesando conversación"));
 const agent = new Agent({
   provider,
   repo,
   knowledge,
   cfg,
+  appointments,
   onTool: (name, input, _out, isError) => log.debug({ name, input, isError }, "tool"),
 });
 const conversations = new ConversationService({
@@ -95,6 +145,7 @@ const panel = await buildPanelApp({
   bus,
   auth,
   log,
+  appointments,
   info: {
     provider: provider.name,
     model: provider.model,
@@ -105,6 +156,7 @@ const panel = await buildPanelApp({
 });
 
 outbox.start();
+googleSync?.start();
 await app.listen({ port: cfg.port, host: "0.0.0.0" });
 await panel.listen({ port: cfg.panelPort, host: cfg.panelHost });
 log.info(`Panel: http://${cfg.panelHost === "0.0.0.0" ? "localhost" : cfg.panelHost}:${cfg.panelPort}`);
@@ -112,6 +164,7 @@ log.info(`Panel: http://${cfg.panelHost === "0.0.0.0" ? "localhost" : cfg.panelH
 const shutdown = async (signal: string) => {
   log.info({ signal }, "apagando");
   outbox.stop();
+  googleSync?.stop();
   await app.close();
   await panel.close();
   await queue.idle();

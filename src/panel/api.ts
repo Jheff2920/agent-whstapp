@@ -2,6 +2,8 @@ import type { FastifyInstance, FastifyReply, FastifyRequest } from "fastify";
 import { z } from "zod";
 import { LEAD_STAGES } from "../agent/tools.js";
 import type { Config } from "../config.js";
+import type { AppointmentService } from "../appointments/service.js";
+import { addDays, localHm, localYmd, zonedToUtc } from "../appointments/time.js";
 import type { ConversationRow, Mode, Repo } from "../db/repos.js";
 import type { EventBus } from "../events.js";
 import type { Outbox } from "../outbox.js";
@@ -13,6 +15,8 @@ export interface PanelDeps {
   outbox: Outbox;
   bus: EventBus;
   auth: Auth;
+  /** Citas en tienda (opcional: sin él no hay agenda). */
+  appointments?: AppointmentService;
   /** Datos informativos para la pantalla de estado. */
   info: { provider: string; model: string; sendConfigured: boolean; alertChannel: "telegram" | "n8n" | "none"; knowledgePending: () => string[] };
 }
@@ -114,6 +118,7 @@ export function registerPanelApi(app: FastifyInstance, d: PanelDeps): void {
         optedOut: customer.opted_out === 1,
         createdAt: customer.created_at,
         facts: repo.getFacts(customer.id),
+        appointments: appts?.enabled ? appts.customerUpcoming(customer.id).map((a) => ({ id: a.id, text: appts.describe(a), contactName: a.contact_name })) : [],
       },
       messages: repo.allMessages(id).map((m) => ({
         id: m.id,
@@ -234,6 +239,131 @@ export function registerPanelApi(app: FastifyInstance, d: PanelDeps): void {
     return detail(repo.getOrCreateConversation(id.data).id);
   });
 
+  // ---- agenda de citas ----
+  const appts = d.appointments;
+  const ymd = z.string().regex(/^\d{4}-\d{2}-\d{2}$/);
+  const hm = z.string().regex(/^\d{2}:\d{2}$/);
+  const agendaOff = (reply: FastifyReply) => reply.code(404).send({ error: "Las citas no están activadas (falta `citas` en knowledge/sedes.yml)" });
+  const sedesInfo = () => (appts?.sedes() ?? []).map((x) => ({ id: x.id, nombre: x.nombre, googleCalendar: Boolean(x.calendar_id) }));
+
+  const apptItem = (a: ReturnType<Repo["listAppointments"]>[number]) => {
+    const tz = d.cfg.timezone;
+    const start = new Date(a.starts_at);
+    return {
+      id: a.id,
+      sede: a.sede,
+      date: localYmd(start, tz),
+      time: localHm(start, tz),
+      endTime: localHm(new Date(a.ends_at), tz),
+      startsAt: a.starts_at,
+      contactName: a.contact_name,
+      purpose: a.purpose,
+      status: a.status,
+      source: a.source,
+      google: { sync: a.google_sync, error: a.google_error },
+      customer: { id: a.customer_id, name: a.customer_name, waId: a.wa_id },
+      conversationId: a.conversation_id,
+    };
+  };
+
+  app.get("/api/agenda", async (req, reply) => {
+    if (!appts?.enabled) return agendaOff(reply);
+    const q = z.object({ from: ymd.optional(), to: ymd.optional(), sede: z.string().max(40).optional() }).safeParse(req.query);
+    if (!q.success) return reply.code(400).send({ error: "rango inválido" });
+    const tz = d.cfg.timezone;
+    const from = q.data.from ?? localYmd(new Date(), tz);
+    const to = q.data.to ?? addDays(from, 6);
+    if (to < from || to > addDays(from, 92)) return reply.code(400).send({ error: "El rango debe ser de 1 a 92 días" });
+    const rows = repo.listAppointments(zonedToUtc(from, "00:00", tz).toISOString(), zonedToUtc(addDays(to, 1), "00:00", tz).toISOString(), q.data.sede);
+    return { from, to, sedes: sedesInfo(), appointments: rows.map(apptItem) };
+  });
+
+  app.get("/api/agenda/slots", async (req, reply) => {
+    if (!appts?.enabled) return agendaOff(reply);
+    const q = z.object({ sede: z.string().min(1).max(40), fecha: ymd, excluir: z.coerce.number().int().optional() }).safeParse(req.query);
+    if (!q.success) return reply.code(400).send({ error: "parámetros inválidos" });
+    return { hours: appts.freeHours(q.data.sede, q.data.fecha, q.data.excluir) };
+  });
+
+  const reply409 = (reply: FastifyReply, r: { code: string; text: string }) => reply.code(409).send({ error: r.text, code: r.code });
+  const apptById = (req: FastifyRequest) => {
+    const id = idParam.safeParse((req.params as { id: string }).id);
+    return id.success ? repo.getAppointment(id.data) : undefined;
+  };
+  const one = (id: number) => {
+    const a = repo.getAppointment(id)!;
+    const customer = repo.getCustomer(a.customer_id)!;
+    return apptItem({ ...a, wa_id: customer.wa_id, customer_name: customer.name });
+  };
+
+  app.post("/api/agenda", async (req, reply) => {
+    if (!appts?.enabled) return agendaOff(reply);
+    const body = z
+      .object({
+        phone: z.string().min(6).max(25),
+        sede: z.string().min(1).max(40),
+        fecha: ymd,
+        hora: hm,
+        nombre: z.string().trim().min(2).max(80),
+        motivo: z.string().trim().max(200).optional(),
+      })
+      .safeParse(req.body);
+    if (!body.success) return reply.code(400).send({ error: "datos inválidos" });
+    let waId = body.data.phone.replace(/\D/g, "");
+    if (/^9\d{8}$/.test(waId)) waId = `51${waId}`; // celular peruano sin prefijo
+    if (waId.length < 8 || waId.length > 15) return reply.code(400).send({ error: "Teléfono inválido (usa el formato internacional, p. ej. 51987654321)" });
+    const customer = repo.upsertCustomer(waId, body.data.nombre);
+    const conv = repo.getOrCreateConversation(customer.id);
+    const r = appts.book({
+      customerId: customer.id,
+      conversationId: conv.id,
+      sede: body.data.sede,
+      fecha: body.data.fecha,
+      hora: body.data.hora,
+      nombre: body.data.nombre,
+      motivo: body.data.motivo,
+      source: "panel",
+    });
+    return r.ok ? { appointment: one(r.value.id) } : reply409(reply, r);
+  });
+
+  app.post("/api/agenda/:id/cancel", async (req, reply) => {
+    if (!appts?.enabled) return agendaOff(reply);
+    const a = apptById(req);
+    if (!a) return reply.code(404).send({ error: "cita no encontrada" });
+    const r = appts.cancel(a.id);
+    return r.ok ? { appointment: one(a.id) } : reply409(reply, r);
+  });
+
+  app.post("/api/agenda/:id/reschedule", async (req, reply) => {
+    if (!appts?.enabled) return agendaOff(reply);
+    const a = apptById(req);
+    if (!a) return reply.code(404).send({ error: "cita no encontrada" });
+    const body = z.object({ fecha: ymd, hora: hm }).safeParse(req.body);
+    if (!body.success) return reply.code(400).send({ error: "datos inválidos" });
+    const r = appts.reschedule(a.id, body.data);
+    return r.ok ? { appointment: one(a.id) } : reply409(reply, r);
+  });
+
+  app.post("/api/agenda/:id/status", async (req, reply) => {
+    if (!appts?.enabled) return agendaOff(reply);
+    const a = apptById(req);
+    if (!a) return reply.code(404).send({ error: "cita no encontrada" });
+    const body = z.object({ status: z.enum(["completada", "no_asistio"]) }).safeParse(req.body);
+    if (!body.success) return reply.code(400).send({ error: "estado inválido" });
+    const r = appts.markStatus(a.id, body.data.status);
+    if (r.ok) bus.emit({ type: "agenda", conversationId: 0 });
+    return r.ok ? { appointment: one(a.id) } : reply409(reply, r);
+  });
+
+  app.post("/api/agenda/:id/resync", async (req, reply) => {
+    if (!appts?.enabled) return agendaOff(reply);
+    const a = apptById(req);
+    if (!a) return reply.code(404).send({ error: "cita no encontrada" });
+    const r = appts.retryGoogle(a.id);
+    return r.ok ? { appointment: one(a.id) } : reply409(reply, r);
+  });
+
   // ---- estado ----
   app.get("/api/status", async () => ({
     llm: { provider: d.info.provider, model: d.info.model },
@@ -244,6 +374,7 @@ export function registerPanelApi(app: FastifyInstance, d: PanelDeps): void {
     outbox: repo.outboxCounts(),
     conversations: repo.conversationCounts(),
     timezone: d.cfg.timezone,
+    appointmentsEnabled: Boolean(appts?.enabled),
   }));
 
   // ---- tiempo real (SSE) ----

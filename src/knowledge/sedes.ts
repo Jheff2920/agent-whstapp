@@ -34,15 +34,39 @@ const sedeSchema = z.object({
   nombre: z.string().min(1),
   direccion: z.string().min(1),
   horario: horarioSchema,
+  /** ID del calendario de Google de esta sede (opcional: sin él la cita solo vive en el sistema). */
+  calendar_id: z.string().min(3).optional(),
+});
+
+const isRealDate = (s: string) => {
+  const d = new Date(`${s}T00:00:00Z`);
+  return !Number.isNaN(d.getTime()) && d.toISOString().slice(0, 10) === s;
+};
+
+const citasSchema = z.object({
+  duracion_min: z.number().int().min(15).max(480),
+  anticipacion_min: z.number().int().min(0).max(14 * 24 * 60),
+  cupos_por_franja: z.number().int().min(1).max(50),
+  /** Cuántos días hacia adelante se puede reservar. */
+  horizonte_dias: z.number().int().min(1).max(120).default(30),
+  /** Citas futuras activas que puede tener un mismo cliente (evita que un número acapare los horarios). */
+  max_por_cliente: z.number().int().min(1).max(20).default(2),
 });
 
 const fileSchema = z.object({
   zona_horaria: z.string().default("America/Lima"),
   sedes: z.array(sedeSchema).min(1),
+  /** Si está presente, el agente puede agendar citas. */
+  citas: citasSchema.optional(),
+  /** Días sin atención en ninguna sede (AAAA-MM-DD). */
+  feriados: z
+    .array(z.string().regex(/^\d{4}-\d{2}-\d{2}$/).refine(isRealDate, "fecha inexistente"))
+    .default([]),
 });
 
 export type Sede = z.infer<typeof sedeSchema>;
 export type Sedes = z.infer<typeof fileSchema>;
+export type CitasConfig = z.infer<typeof citasSchema>;
 
 export function parseSedes(text: string): Sedes {
   let raw: unknown;
@@ -79,9 +103,10 @@ export function describeSchedule(horario: Sede["horario"]): string {
 
 /** Sección del prompt con dirección y horario de cada sede. */
 export function renderSedes(s: Sedes): string {
-  return s.sedes
+  const base = s.sedes
     .map((x) => `## Sede ${x.nombre}\nDirección: ${x.direccion}\nHorario (hora de ${s.zona_horaria}): ${describeSchedule(x.horario)}.`)
     .join("\n\n");
+  return s.feriados.length ? `${base}\n\nEn feriados no se atiende en ninguna sede.` : base;
 }
 
 function localClock(now: Date, timeZone: string): { day: number; minutes: number } {
