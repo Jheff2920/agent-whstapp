@@ -1,0 +1,265 @@
+{
+  "name": "Red Soluciones - WhatsApp (entrada)",
+  "nodes": [
+    {
+      "id": "d68e9724-2190-44f6-ae38-bbe439406e37",
+      "name": "Meta verifica el webhook (GET)",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        0,
+        96
+      ],
+      "parameters": {
+        "httpMethod": "GET",
+        "path": "red-whatsapp",
+        "authentication": "none",
+        "responseMode": "responseNode"
+      },
+      "webhookId": "16cc6e70-af9e-46d5-a343-14fb9dadbdd7"
+    },
+    {
+      "id": "79504fa0-563e-4362-a9e3-8642dde27f70",
+      "name": "¿Token de verificación correcto?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        224,
+        96
+      ],
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "leftValue": "={{ $json.query[\"hub.mode\"] }}",
+              "operator": {
+                "type": "string",
+                "operation": "equals"
+              },
+              "rightValue": "subscribe"
+            },
+            {
+              "leftValue": "={{ $json.query[\"hub.verify_token\"] }}",
+              "operator": {
+                "type": "string",
+                "operation": "equals"
+              },
+              "rightValue": "rs-wa-verify-7f3k9q2m"
+            }
+          ],
+          "combinator": "and"
+        }
+      }
+    },
+    {
+      "id": "2f397de1-790c-4901-980f-ce962288b0a6",
+      "name": "Devolver el desafío a Meta",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.5,
+      "position": [
+        448,
+        0
+      ],
+      "parameters": {
+        "respondWith": "text",
+        "responseBody": "={{ $json.query[\"hub.challenge\"] }}",
+        "options": {
+          "responseCode": 200
+        }
+      }
+    },
+    {
+      "id": "fdab9dc2-c915-43af-8b2f-287f227b6141",
+      "name": "Rechazar verificación",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.5,
+      "position": [
+        448,
+        192
+      ],
+      "parameters": {
+        "respondWith": "text",
+        "responseBody": "Token de verificación inválido",
+        "options": {
+          "responseCode": 403
+        }
+      }
+    },
+    {
+      "id": "fea098f0-654d-491e-afdf-38ba141fa375",
+      "name": "Mensajes y estados de WhatsApp (POST)",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        0,
+        512
+      ],
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "red-whatsapp",
+        "authentication": "none",
+        "responseMode": "responseNode",
+        "options": {
+          "rawBody": true
+        }
+      },
+      "webhookId": "6010edb8-d1d3-45f5-90d7-e2edf5151458"
+    },
+    {
+      "id": "e9a989d5-d439-4901-8cb9-553ebf7de8a8",
+      "name": "Reenviar al cerebro",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.5,
+      "position": [
+        224,
+        512
+      ],
+      "parameters": {
+        "method": "POST",
+        "url": "https://TU-URL-PUBLICA-DEL-CEREBRO/api/inbound",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpTemplatedCustomAuth",
+        "sendHeaders": true,
+        "specifyHeaders": "keypair",
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "X-Hub-Signature-256",
+              "value": "={{ $json.headers[\"x-hub-signature-256\"] }}"
+            },
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "contentType": "binaryData",
+        "inputDataFieldName": "data",
+        "options": {
+          "timeout": 20000
+        }
+      },
+      "retryOnFail": true,
+      "maxTries": 3,
+      "waitBetweenTries": 2000,
+      "onError": "continueErrorOutput"
+    },
+    {
+      "id": "9419bdfc-3952-47df-9c9d-fc4ac43a247e",
+      "name": "Responder 200 a Meta",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.5,
+      "position": [
+        448,
+        416
+      ],
+      "parameters": {
+        "respondWith": "noData",
+        "options": {
+          "responseCode": 200
+        }
+      }
+    },
+    {
+      "id": "54b225e8-2973-4cf7-a9fc-c8f40c30db30",
+      "name": "Responder 500 (Meta reintentará)",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.5,
+      "position": [
+        448,
+        608
+      ],
+      "parameters": {
+        "respondWith": "text",
+        "responseBody": "El cerebro no está disponible",
+        "options": {
+          "responseCode": 500
+        }
+      }
+    },
+    {
+      "id": "f8a1d78f-f320-44cb-b64a-1f52235b124a",
+      "name": "Nota de configuración",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        160,
+        608
+      ],
+      "parameters": {
+        "content": "## Red Soluciones: WhatsApp (entrada)\n1. Crea la credencial del nodo \"Reenviar al cerebro\" (tipo Custom Auth con plantilla) con la plantilla `{\"headers\":{\"X-Internal-Token\":\"{{api_key}}\"}}` y como api_key tu INTERNAL_TOKEN (el mismo valor que en el cerebro).\n2. Escribe en ese nodo la URL pública del cerebro terminada en /api/inbound.\n3. En Meta (WhatsApp, Configuración, Webhook) pon la URL de producción de este webhook (.../webhook/red-whatsapp) y el token de verificación rs-wa-verify-7f3k9q2m; suscribe el campo messages.\n4. Publica el workflow. Si el cerebro no responde se devuelve 500 y Meta reintenta la entrega.",
+        "color": 4
+      }
+    }
+  ],
+  "connections": {
+    "Meta verifica el webhook (GET)": {
+      "main": [
+        [
+          {
+            "node": "¿Token de verificación correcto?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "¿Token de verificación correcto?": {
+      "main": [
+        [
+          {
+            "node": "Devolver el desafío a Meta",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Rechazar verificación",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Mensajes y estados de WhatsApp (POST)": {
+      "main": [
+        [
+          {
+            "node": "Reenviar al cerebro",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Reenviar al cerebro": {
+      "main": [
+        [
+          {
+            "node": "Responder 200 a Meta",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Responder 500 (Meta reintentará)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1"
+  }
+}

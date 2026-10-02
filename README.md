@@ -87,6 +87,8 @@ que envía por WhatsApp; vacío = los mensajes solo se escriben en el log (modo 
 
 ## Contrato con n8n
 
+Los workflows ya están creados en el n8n Cloud del proyecto y versionados en [`n8n/`](./n8n/README.md) (pasos de configuración incluidos).
+
 - **Entrada:** n8n reenvía el cuerpo **crudo** del webhook de Meta a `POST /api/inbound` con las cabeceras
   `X-Internal-Token` y `X-Hub-Signature-256` originales. Respuesta `202`. También procesa estados de entrega (`delivered`, `read`…).
 - **Salida:** el servicio hace `POST` a `N8N_SEND_URL` con `{ outboxId, messageId, to, text }` y la cabecera `X-Internal-Token`;
@@ -108,14 +110,15 @@ src/
   db/                  SQLite (better-sqlite3) y repositorio
   whatsapp/            firma HMAC y parser del webhook
   cli-chat.ts          chat por terminal para pruebas
-knowledge/             datos del negocio (plantillas vacías)
+knowledge/             datos del negocio (catálogo, sedes, empresa)
+n8n/                   workflows de WhatsApp (entrada y salida) y guía de configuración
 tests/                 vitest (+ fixtures ficticios)
 ```
 
 ## Hoja de ruta
 
 1. ✅ **Base:** modelo intercambiable, agente, memoria por cliente, entrada/salida, tests.
-2. n8n (workflows `inbound`, `send`, alerta de escalamiento) y **panel web** tipo bandeja para ver conversaciones y tomar el control.
+2. n8n: ✅ workflows de entrada y salida creados; pendiente alerta de escalamiento. **Panel web** tipo bandeja para ver conversaciones y tomar el control.
 3. **Citas en tienda** con Google Calendar vía n8n (zona horaria `America/Lima`) y recordatorios.
 4. **Aprendizaje:** resúmenes por cliente y aprendizajes globales que tú apruebas antes de que entren al prompt; seguimientos.
 5. Despliegue en **Raspberry Pi** (systemd, Cloudflare Tunnel, copias de seguridad).

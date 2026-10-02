@@ -1,0 +1,124 @@
+{
+  "name": "Red Soluciones - WhatsApp (salida)",
+  "nodes": [
+    {
+      "id": "ab839bc4-4ca6-4264-8012-6037dcc45d90",
+      "name": "El cerebro pide enviar un mensaje",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        0,
+        96
+      ],
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "red-whatsapp-enviar",
+        "authentication": "headerAuth",
+        "responseMode": "responseNode"
+      },
+      "webhookId": "9c592295-0bee-4878-8f60-efcb637a7c25"
+    },
+    {
+      "id": "a9d5de3f-1f31-4155-afc6-427c5cb3117d",
+      "name": "Enviar mensaje por WhatsApp",
+      "type": "n8n-nodes-base.whatsApp",
+      "typeVersion": 1.1,
+      "position": [
+        224,
+        96
+      ],
+      "parameters": {
+        "resource": "message",
+        "operation": "send",
+        "phoneNumberId": "TU_PHONE_NUMBER_ID",
+        "recipientPhoneNumber": "={{ $json.body.to }}",
+        "messageType": "text",
+        "textBody": "={{ $json.body.text }}"
+      },
+      "onError": "continueErrorOutput",
+      "webhookId": "6df36d71-6f12-4689-bec0-0018a016e95e"
+    },
+    {
+      "id": "c428283f-d4c1-47ca-992c-9a05a4ca8a1b",
+      "name": "Devolver el id del mensaje",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.5,
+      "position": [
+        448,
+        0
+      ],
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ { \"wa_message_id\": $json.messages?.[0]?.id ?? null } }}",
+        "options": {
+          "responseCode": 200
+        }
+      }
+    },
+    {
+      "id": "997ac848-e5be-48bb-b918-cc84e5359869",
+      "name": "Informar fallo de envío",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.5,
+      "position": [
+        448,
+        192
+      ],
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ { \"error\": $json.error?.message ?? \"No se pudo enviar el mensaje por WhatsApp\" } }}",
+        "options": {
+          "responseCode": 502
+        }
+      }
+    },
+    {
+      "id": "cd043290-775e-4ccc-9d0a-d035ab4f8325",
+      "name": "Nota de configuración",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        160,
+        192
+      ],
+      "parameters": {
+        "content": "## Red Soluciones: WhatsApp (salida)\n1. Crea la credencial Header Auth del webhook con nombre de cabecera X-Internal-Token y como valor tu INTERNAL_TOKEN (el mismo del cerebro).\n2. Crea la credencial \"WhatsApp Business Cloud\" con el access token de Meta y escribe el ID del número de teléfono en el nodo de envío.\n3. Publica el workflow y pon en el cerebro N8N_SEND_URL con la URL de producción de este webhook (.../webhook/red-whatsapp-enviar).\n4. Si WhatsApp rechaza el mensaje (por ejemplo fuera de la ventana de 24 h) se responde 502 y el cerebro lo reintenta o lo marca como fallido.",
+        "color": 4
+      }
+    }
+  ],
+  "connections": {
+    "El cerebro pide enviar un mensaje": {
+      "main": [
+        [
+          {
+            "node": "Enviar mensaje por WhatsApp",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Enviar mensaje por WhatsApp": {
+      "main": [
+        [
+          {
+            "node": "Devolver el id del mensaje",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Informar fallo de envío",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1"
+  }
+}
